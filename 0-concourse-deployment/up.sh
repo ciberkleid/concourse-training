@@ -18,6 +18,8 @@ CONCOURSE_DB_ROLE=${CONCOURSE_DB_ROLE:?"Missing env"}
 CONCOURSE_DB_PASSWORD=${CONCOURSE_DB_PASSWORD:?"Missing env"}
 VM_KEYPAIR_NAME=${VM_KEYPAIR_NAME:?"Missing env"}
 DOMAIN=${DOMAIN:?"Missing env"}
+CONCOURSE_BOSH_ENV=${CONCOURSE_BOSH_ENV:?"Missing env"}
+CONCOURSE_DEPLOYMENT_NAME=${CONCOURSE_DEPLOYMENT_NAME:?"Missing env"}
 set -x
 
 
@@ -29,6 +31,7 @@ if ! [ -f bin/bosh ]; then
   chmod +x bin/bosh
 fi
 
+bbl_cmd="bbl --state-dir state/"
 if ! [ -f bin/bbl ]; then
   curl -JLO "https://github.com/cloudfoundry/bosh-bootloader/releases/download/v3.0.4/bbl-v3.0.4_osx"
   mv bbl-v3.0.4_osx bin/bbl
@@ -43,11 +46,10 @@ if ! aws --version; then
 fi
 
 if ! aws ec2 describe-key-pairs | grep -q $VM_KEYPAIR_NAME; then
-  aws ec2 create-key-pair --key-name $VM_KEYPAIR_NAME | jq -r '.KeyMaterial' > $VM_KEYPAIR_NAME.pem
-  chmod 400 $VM_KEYPAIR_NAME.pem
+  aws ec2 create-key-pair --key-name $VM_KEYPAIR_NAME | jq -r '.KeyMaterial' > state/$VM_KEYPAIR_NAME.pem
+  chmod 400 state/$VM_KEYPAIR_NAME.pem
 fi
 
-bbl_cmd="bbl --state-dir state/"
 if ! [ -f state/bbl-state.json ]; then
   $bbl_cmd \
     up \
@@ -85,7 +87,6 @@ if ! $bbl_cmd lbs; then
 fi
 
 DIRECTOR_ADDRESS=$($bbl_cmd director-address)
-CONCOURSE_BOSH_ENV=concourse
 if ! bosh env --environment $DIRECTOR_ADDRESS; then
   bosh alias-env $CONCOURSE_BOSH_ENV \
     --environment $DIRECTOR_ADDRESS \
@@ -124,7 +125,6 @@ concourse_db_disk_type: 5GB
 EOF
 fi
 
-CONCOURSE_DEPLOYMENT_NAME=concourse
 if ! bosh deployments -e $CONCOURSE_BOSH_ENV | grep $CONCOURSE_DEPLOYMENT_NAME; then
   bosh deploy \
     --non-interactive \
