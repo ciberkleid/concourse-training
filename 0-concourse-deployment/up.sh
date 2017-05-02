@@ -14,6 +14,7 @@ AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?"Missing env"}
 AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:?"Missing env"}
 CONCOURSE_USERNAME=${CONCOURSE_USERNAME:?"Missing env"}
 CONCOURSE_PASSWORD=${CONCOURSE_PASSWORD:?"Missing env"}
+CONCOURSE_TARGET=${CONCOURSE_TARGET:?"env!"}
 CONCOURSE_DB_NAME=${CONCOURSE_DB_NAME:?"Missing env"}
 CONCOURSE_DB_ROLE=${CONCOURSE_DB_ROLE:?"Missing env"}
 CONCOURSE_DB_PASSWORD=${CONCOURSE_DB_PASSWORD:?"Missing env"}
@@ -108,9 +109,8 @@ if ! bosh stemcells -e $CONCOURSE_BOSH_ENV | grep bosh-aws-xen-hvm-ubuntu-trusty
   bosh upload-stemcell -e $CONCOURSE_BOSH_ENV https://s3.amazonaws.com/bosh-core-stemcells/aws/bosh-stemcell-3363.9-aws-xen-hvm-ubuntu-trusty-go_agent.tgz
 fi
 
+CONCOURSE_LBS_DOMAIN=$($bbl_cmd lbs | sed 's/.*\[\(.*\)\]/\1/')  # Format: Concourse LB: stack-bbl-Concours-1RABRZ7DBDC7F [stack-bbl-Concours-1RABRZ7DBDC7F-585187859.us-west-2.elb.amazonaws.com]
 if ! [ -f state/concourse-creds.yml ]; then
-  CONCOURSE_LBS_DOMAIN=$($bbl_cmd lbs | sed 's/.*\[\(.*\)\]/\1/')  # Format: Concourse LB: stack-bbl-Concours-1RABRZ7DBDC7F [stack-bbl-Concours-1RABRZ7DBDC7F-585187859.us-west-2.elb.amazonaws.com]
-
   # from https://github.com/cloudfoundry/bosh-bootloader/blob/master/docs/concourse_aws.md
   cat > state/concourse-creds.yml <<EOF
 concourse_external_url: http://$CONCOURSE_LBS_DOMAIN
@@ -135,3 +135,23 @@ if ! bosh deployments -e $CONCOURSE_BOSH_ENV | grep $CONCOURSE_DEPLOYMENT_NAME; 
     concourse-deployment.yml \
   ;
 fi
+
+if ! [ -f bin/fly ]; then
+  curl -L "http://$CONCOURSE_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly
+  chmod +x bin/fly
+fi
+
+if fly login \
+  --target $CONCOURSE_TARGET \
+  --concourse-url "http://$CONCOURSE_LBS_DOMAIN" \
+  --username admin \
+  --password password; then
+  fly set-team \
+    --target $CONCOURSE_TARGET \
+    --team-name main \
+    --basic-auth-username=$CONCOURSE_USERNAME \
+    --basic-auth-password=$CONCOURSE_PASSWORD \
+    --non-interactive \
+  ;
+fi
+

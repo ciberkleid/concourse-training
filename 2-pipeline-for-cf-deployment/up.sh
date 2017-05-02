@@ -37,20 +37,6 @@ if ! [ -f bin/fly ]; then
   chmod +x bin/fly
 fi
 
-if fly login \
-  --target $CONCOURSE_TARGET \
-  --concourse-url "http://$CONCOURSE_DOMAIN" \
-  --username admin \
-  --password password; then
-  fly set-team \
-    --target $CONCOURSE_TARGET \
-    --team-name main \
-    --basic-auth-username=$CONCOURSE_USERNAME \
-    --basic-auth-password=$CONCOURSE_PASSWORD \
-    --non-interactive \
-  ;
-fi
-
 if ! fly targets | grep $CONCOURSE_TARGET; then
   fly login \
     --target $CONCOURSE_TARGET \
