@@ -1,0 +1,47 @@
+---
+groups:
+- name: cf-deployment
+  jobs:
+  - update-cf
+resources:
+- name: state
+  type: git
+  source:
+    branch: master
+    uri: {{state_repo_url}}
+    private_key: {{state_repo_private_key}}
+- name: cf-deployment
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+- name: cf-deployment-concourse-tasks
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+jobs:
+- name: update-cf
+  serial_groups: [bosh-cf]
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - aggregate:
+    - get: cf-deployment-concourse-tasks
+    - get: cf-deployment
+    - get: state
+  - task: bosh-deploy-cf
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      bbl-state: state
+      cf-deployment: cf-deployment
+      ops-files: cf-deployment
+      vars-store: state
+    params:
+      SYSTEM_DOMAIN: {{system_domain}}
+      OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/scale-to-one-az.yml"
+    ensure:
+      put: state
+      params:
+        repository: state
+        rebase: true
