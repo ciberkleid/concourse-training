@@ -4,7 +4,8 @@ set -o nounset
 set -o pipefail
 
 if ! [ -d state/ ]; then
-  git clone git@github.com:micahyoung/concourse-training-state.git state
+  exit "No State, exiting"
+  exit 1
 fi
 
 source ./state/env.sh
