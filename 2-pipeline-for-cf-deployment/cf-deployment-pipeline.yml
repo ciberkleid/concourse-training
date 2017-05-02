@@ -3,6 +3,7 @@ groups:
 - name: cf-deployment
   jobs:
   - update-bosh
+  - update-stemcells
   - update-cf
 resources:
 - name: vars-store
@@ -38,8 +39,9 @@ jobs:
   build_logs_to_retain: 100
   plan:
   - aggregate:
-    - get: cf-deployment-concourse-tasks
     - get: bbl-state
+    - get: cf-deployment-concourse-tasks
+    - get: cf-deployment
   - task: bbl-up
     file: cf-deployment-concourse-tasks/bbl-up/task.yml
     params:
@@ -50,22 +52,37 @@ jobs:
       BBL_LB_CERT: {{bbl_lbs_ssl_cert}}
       BBL_LB_KEY: {{bbl_lbs_ssl_signing_key}}
       BBL_ENV_NAME: {{bbl_env_name}}
-    input_mapping:
-      bbl-state: bbl-state
     ensure:
       put: bbl-state
       params:
         repository: updated-bbl-state
         rebase: true
+- name: update-stemcells
+  serial_groups: [bosh-cf]
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - aggregate:
+    - get: bbl-state
+      passed: [update-bosh]
+    - get: cf-deployment
+      passed: [update-bosh]
+    - get: cf-deployment-concourse-tasks
+      passed: [update-bosh]
+  - task: bbl-up
+    file: cf-deployment-concourse-tasks/bosh-upload-stemcell-from-cf-deployment/task.yml
 - name: update-cf
   serial_groups: [bosh-cf]
   public: true
   build_logs_to_retain: 100
   plan:
   - aggregate:
-    - get: cf-deployment-concourse-tasks
-    - get: cf-deployment
     - get: bbl-state
+      passed: [update-stemcells]
+    - get: cf-deployment-concourse-tasks
+      passed: [update-stemcells]
+    - get: cf-deployment
+      passed: [update-stemcells]
     - get: vars-store
   - task: bosh-deploy-cf
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
