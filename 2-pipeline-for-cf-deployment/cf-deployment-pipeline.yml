@@ -5,12 +5,22 @@ groups:
   - update-bosh
   - update-cf
 resources:
-- name: state
+- name: vars-store
   type: git
   source:
     branch: master
     uri: {{state_repo_url}}
     private_key: {{state_repo_private_key}}
+    paths:
+    - deployment-vars.yml
+- name: bbl-state
+  type: git
+  source:
+    branch: master
+    uri: {{state_repo_url}}
+    private_key: {{state_repo_private_key}}
+    paths:
+    - bbl-state.json
 - name: cf-deployment
   type: git
   source:
@@ -29,7 +39,7 @@ jobs:
   plan:
   - aggregate:
     - get: cf-deployment-concourse-tasks
-    - get: state
+    - get: bbl-state
   - task: bbl-up
     file: cf-deployment-concourse-tasks/bbl-up/task.yml
     params:
@@ -41,11 +51,12 @@ jobs:
       BBL_LB_KEY: {{bbl_lbs_ssl_signing_key}}
       BBL_ENV_NAME: {{bbl_env_name}}
     input_mapping:
-      bbl-state: state
+      bbl-state: bbl-state
     ensure:
-      put: state
+      put: bbl-state
       params:
-        repository: state
+        repository: updated-bbl-state
+        rebase: true
 - name: update-cf
   serial_groups: [bosh-cf]
   public: true
@@ -54,19 +65,20 @@ jobs:
   - aggregate:
     - get: cf-deployment-concourse-tasks
     - get: cf-deployment
-    - get: state
+    - get: bbl-state
+    - get: vars-store
   - task: bosh-deploy-cf
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
-      bbl-state: state
+      bbl-state: bbl-state
       cf-deployment: cf-deployment
       ops-files: cf-deployment
-      vars-store: state
+      vars-store: vars-store
     params:
       SYSTEM_DOMAIN: {{system_domain}}
       OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/disable-router-tls-termination.yml operations/scale-to-one-az.yml"
     ensure:
-      put: state
+      put: vars-store
       params:
-        repository: state
+        repository: updated-vars-store
         rebase: true
