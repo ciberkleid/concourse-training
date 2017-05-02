@@ -1,0 +1,46 @@
+groups:
+- name: cf-app-deployment
+  jobs:
+  - my-app-build-and-deploy
+resources:
+- name: my-app-git-resource
+  type: git
+  source:
+    branch: master
+    uri: {{app_repo_url}}
+- name: my-app-cf-resource
+  type: cf
+  source:
+    api: {{cf_api_url}}
+    username: {{cf_username}}
+    password: {{cf_password}}
+    organization: {{cf_org}}
+    space: {{cf_space}}
+    skip_cert_check: true
+jobs:
+- name: my-app-build-and-deploy
+  public: true
+  serial: true
+  plan:
+  - get: my-app-git-resource
+  - task: build
+    ### move to file: task.yml ###
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+          tag: 3-jdk-8
+      inputs:
+        - name: my-app-git-resource
+      outputs:
+        - name: build-output
+      run:
+        path: /bin/bash
+        args:
+        - '-c'
+        - 'mvn clean package -f my-app-git-resource/pom.xml && cp -r my-app-git-resource build-output/'
+  - put: my-app-cf-resource
+    params:
+      manifest: build-output/my-app-git-resource/manifest.yml
