@@ -2,6 +2,7 @@
 groups:
 - name: cf-deployment
   jobs:
+  - update-bosh
   - update-cf
 resources:
 - name: state
@@ -21,6 +22,30 @@ resources:
     branch: master
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 jobs:
+- name: update-bosh
+  serial_groups: [bosh-cf]
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - aggregate:
+    - get: cf-deployment-concourse-tasks
+    - get: state
+  - task: bbl-up
+    file: cf-deployment-concourse-tasks/bbl-up/task.yml
+    params:
+      BBL_IAAS: aws
+      BBL_AWS_REGION: {{bbl_aws_region}}
+      BBL_AWS_ACCESS_KEY_ID: {{bbl_aws_access_key_id}}
+      BBL_AWS_SECRET_ACCESS_KEY: {{bbl_aws_secret_access_key}}
+      BBL_LB_CERT: {{bbl_lbs_ssl_cert}}
+      BBL_LB_KEY: {{bbl_lbs_ssl_signing_key}}
+      BBL_ENV_NAME: {{bbl_env_name}}
+    input_mapping:
+      bbl-state: state
+    ensure:
+      put: state
+      params:
+        repository: state
 - name: update-cf
   serial_groups: [bosh-cf]
   public: true
@@ -39,7 +64,7 @@ jobs:
       vars-store: state
     params:
       SYSTEM_DOMAIN: {{system_domain}}
-      OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/scale-to-one-az.yml"
+      OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/disable-router-tls-termination.yml operations/scale-to-one-az.yml"
     ensure:
       put: state
       params:
