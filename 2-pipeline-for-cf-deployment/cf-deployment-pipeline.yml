@@ -71,6 +71,8 @@ jobs:
       passed: [update-bosh]
   - task: bbl-up
     file: cf-deployment-concourse-tasks/bosh-upload-stemcell-from-cf-deployment/task.yml
+    params:
+      INFRASTRUCTURE: aws
 - name: update-cf
   serial_groups: [bosh-cf]
   public: true
