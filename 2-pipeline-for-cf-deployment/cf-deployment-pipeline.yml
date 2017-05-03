@@ -95,7 +95,7 @@ jobs:
       vars-store: vars-store
     params:
       SYSTEM_DOMAIN: {{system_domain}}
-      OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/disable-router-tls-termination.yml operations/scale-to-one-az.yml"
+      OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/scale-to-one-az.yml"
     ensure:
       put: vars-store
       params:
