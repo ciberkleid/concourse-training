@@ -59,20 +59,26 @@ if ! fly targets | grep $CONCOURSE_TARGET; then
   ;
 fi
 
+if ! [ -f state/concourse-vars.yml ]; then
+  cat > state/concourse-vars.yml <<EOF
+bbl_env_name: $CONCOURSE_BOSH_ENV
+bbl_aws_region: $AWS_DEFAULT_REGION
+bbl_aws_access_key_id: $AWS_ACCESS_KEY_ID
+bbl_aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+bbl_lbs_ssl_cert: "$BBL_LB_CERT"
+bbl_lbs_ssl_signing_key: "$BBL_LB_KEY"
+state_repo_url: $STATE_REPO_URL
+state_repo_private_key: "$STATE_REPO_PRIVATE_KEY"
+system_domain: $DOMAIN
+EOF
+fi
+
 if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
   fly set-pipeline \
     --target $CONCOURSE_TARGET \
     --pipeline $CONCOURSE_PIPELINE \
+    --load-vars-from state/concourse-vars.yml \
     --config cf-deployment-pipeline.yml \
-    --var bbl_env_name="$CONCOURSE_BOSH_ENV" \
-    --var bbl_aws_region="$AWS_DEFAULT_REGION" \
-    --var bbl_aws_access_key_id="$AWS_ACCESS_KEY_ID" \
-    --var bbl_aws_secret_access_key="$AWS_SECRET_ACCESS_KEY" \
-    --var bbl_lbs_ssl_cert="$BBL_LB_CERT" \
-    --var bbl_lbs_ssl_signing_key="$BBL_LB_KEY" \
-    --var state_repo_url="$STATE_REPO_URL" \
-    --var state_repo_private_key="$STATE_REPO_PRIVATE_KEY" \
-    --var system_domain="$DOMAIN" \
     --non-interactive \
   ;
 fi
