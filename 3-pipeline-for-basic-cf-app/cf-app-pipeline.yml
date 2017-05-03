@@ -23,6 +23,7 @@ jobs:
   serial: true
   plan:
   - get: my-app-git-resource
+    trigger: true
   - task: build
     ### move to file: task.yml ###
     config:
