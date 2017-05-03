@@ -37,19 +37,23 @@ if ! fly targets | grep $CONCOURSE_TARGET; then
   ;
 fi
 
+if ! [ -f state/cf-app-pipeline-vars.yml ]; then
+  cat > state/cf-app-pipeline-vars.yml <<EOF
+cf_api_url: $CF_API_URL
+cf_username: $APPUSER_USERNAME
+cf_password: $APPUSER_PASSWORD
+cf_org: $APPUSER_ORG
+cf_space: $APPUSER_SPACE
+app_repo_url: $APP_REPO_URL
+EOF
+fi
+
 if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
   fly set-pipeline \
     --target $CONCOURSE_TARGET \
     --pipeline $CONCOURSE_APP_PIPELINE \
+    --load-vars-from state/cf-app-pipeline-vars.yml \
     --config cf-app-pipeline.yml \
-    --var cf_api_url="$CF_API_URL" \
-    --var cf_username="$APPUSER_USERNAME" \
-    --var cf_password="$APPUSER_PASSWORD" \
-    --var cf_org="$APPUSER_ORG" \
-    --var cf_space="$APPUSER_SPACE" \
-    --var app_repo_url="$APP_REPO_URL" \
-    --var state_repo_url="$STATE_REPO_URL" \
-    --var state_repo_private_key="$STATE_REPO_PRIVATE_KEY" \
     --non-interactive \
   ;
 fi

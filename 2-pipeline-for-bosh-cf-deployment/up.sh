@@ -65,10 +65,10 @@ bbl_env_name: $CONCOURSE_BOSH_ENV
 bbl_aws_region: $AWS_DEFAULT_REGION
 bbl_aws_access_key_id: $AWS_ACCESS_KEY_ID
 bbl_aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
-bbl_lbs_ssl_cert: "$BBL_LB_CERT"
-bbl_lbs_ssl_signing_key: "$BBL_LB_KEY"
+bbl_lbs_ssl_cert: !!binary $(echo "$BBL_LB_CERT" | base64)
+bbl_lbs_ssl_signing_key: !!binary $(echo "$BBL_LB_KEY" | base64)
 state_repo_url: $STATE_REPO_URL
-state_repo_private_key: "$STATE_REPO_PRIVATE_KEY"
+state_repo_private_key: !!binary $(echo "$STATE_REPO_PRIVATE_KEY" | base64)
 system_domain: $DOMAIN
 EOF
 fi
