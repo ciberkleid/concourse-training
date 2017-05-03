@@ -1,7 +1,7 @@
 groups:
-- name: cf-app-deployment
+- name: cf-app-deployment-group
   jobs:
-  - my-app-build-and-deploy
+  - my-app-build-and-deploy-job
 resources:
 - name: my-app-git-resource
   type: git
@@ -18,7 +18,7 @@ resources:
     space: {{cf_space}}
     skip_cert_check: true
 jobs:
-- name: my-app-build-and-deploy
+- name: my-app-build-and-deploy-job
   serial: true
   plan:
   - get: my-app-git-resource
