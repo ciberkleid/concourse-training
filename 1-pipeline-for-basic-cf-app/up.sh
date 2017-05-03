@@ -15,10 +15,10 @@ STATE_REPO_URL=${STATE_REPO_URL:?"env!"}
 STATE_REPO_PRIVATE_KEY=${STATE_REPO_PRIVATE_KEY:?"env!"}
 APP_REPO_URL=${APP_REPO_URL:?"env!"}
 CF_API_URL=${CF_API_URL:?"env!"}
-CF_USERNAME=${CF_USERNAME:?"env!"}
-CF_PASSWORD=${CF_PASSWORD:?"env!"}
-CF_ORG=${CF_ORG:?"env!"}
-CF_SPACE=${CF_SPACE:?"env!"}
+APPUSER_USERNAME=${APPUSER_USERNAME:?"env!"}
+APPUSER_PASSWORD=${APPUSER_PASSWORD:?"env!"}
+APPUSER_ORG=${APPUSER_ORG:?"env!"}
+APPUSER_SPACE=${APPUSER_SPACE:?"env!"}
 
 mkdir -p bin
 PATH=$(pwd)/bin:$PATH
@@ -43,10 +43,10 @@ if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
     --pipeline $CONCOURSE_APP_PIPELINE \
     --config cf-app-pipeline.yml \
     --var cf_api_url="$CF_API_URL" \
-    --var cf_username="$CF_USERNAME" \
-    --var cf_password="$CF_PASSWORD" \
-    --var cf_org="$CF_ORG" \
-    --var cf_space="$CF_SPACE" \
+    --var cf_username="$APPUSER_USERNAME" \
+    --var cf_password="$APPUSER_PASSWORD" \
+    --var cf_org="$APPUSER_ORG" \
+    --var cf_space="$APPUSER_SPACE" \
     --var app_repo_url="$APP_REPO_URL" \
     --var state_repo_url="$STATE_REPO_URL" \
     --var state_repo_private_key="$STATE_REPO_PRIVATE_KEY" \
