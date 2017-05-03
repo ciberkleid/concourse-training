@@ -35,7 +35,6 @@ resources:
 jobs:
 - name: update-bosh
   serial_groups: [bosh-cf]
-  public: true
   build_logs_to_retain: 100
   plan:
   - aggregate:
@@ -59,7 +58,6 @@ jobs:
         rebase: true
 - name: update-stemcells
   serial_groups: [bosh-cf]
-  public: true
   build_logs_to_retain: 100
   plan:
   - aggregate:
@@ -75,7 +73,6 @@ jobs:
       INFRASTRUCTURE: aws
 - name: update-cf
   serial_groups: [bosh-cf]
-  public: true
   build_logs_to_retain: 100
   plan:
   - aggregate:

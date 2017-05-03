@@ -19,7 +19,6 @@ resources:
     skip_cert_check: true
 jobs:
 - name: my-app-build-and-deploy
-  public: true
   serial: true
   plan:
   - get: my-app-git-resource
