@@ -59,8 +59,8 @@ if ! fly targets | grep $CONCOURSE_TARGET; then
   ;
 fi
 
-if ! [ -f state/concourse-vars.yml ]; then
-  cat > state/concourse-vars.yml <<EOF
+if ! [ -f state/cf-deployment-pipeline-vars.yml ]; then
+  cat > state/cf-deployment-pipeline-vars.yml <<EOF
 bbl_env_name: $CONCOURSE_BOSH_ENV
 bbl_aws_region: $AWS_DEFAULT_REGION
 bbl_aws_access_key_id: $AWS_ACCESS_KEY_ID
@@ -77,7 +77,7 @@ if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
   fly set-pipeline \
     --target $CONCOURSE_TARGET \
     --pipeline $CONCOURSE_PIPELINE \
-    --load-vars-from state/concourse-vars.yml \
+    --load-vars-from state/cf-deployment-pipeline-vars.yml \
     --config cf-deployment-pipeline.yml \
     --non-interactive \
   ;
