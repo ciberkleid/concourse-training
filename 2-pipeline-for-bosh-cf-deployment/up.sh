@@ -83,12 +83,30 @@ if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
   ;
 fi
 
-if ! uaac target | grep uaa.$DOMAIN; then
-  uaac target uaa.$DOMAIN
+if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/update-bosh | grep "succeeded" >/dev/null; then
+  echo "Exiting... update-bosh hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"
+  exit 1
 fi
 
+if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/update-stemcells | grep "succeeded" >/dev/null; then
+  echo "Exiting... update-stemcells hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"
+  exit 1
+fi
+
+if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/update-cf | grep "succeeded" >/dev/null; then
+  echo "Exiting... update-cf hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"
+  exit 1
+fi
+
+if ! uaac target | grep uaa.$DOMAIN; then
+  uaac target uaa.$DOMAIN --skip-ssl-validation
+fi
 
 if ! uaac contexts | grep access_token; then
+  uaac token client get admin -s $UAA_ADMIN_SECRET
+fi
+
+if ! uaac me | grep invalid_token; then
   uaac token client get admin -s $UAA_ADMIN_SECRET
 fi
 
@@ -100,8 +118,14 @@ if ! uaac users | grep $APPUSER_USERNAME; then
   uaac member add scim.write $APPUSER_USERNAME
 fi
 
-if cf api | grep "Not logged in"; then
-  cf login -a https://api.$DOMAIN -u $APPUSER_USERNAME -p $APPUSER_PASSWORD
+if ! cf target | grep "https://api.$DOMAIN"; then
+  cf login \
+    -a https://api.$DOMAIN \
+    -u $APPUSER_USERNAME \
+    -p $APPUSER_PASSWORD \
+    -o system \
+    --skip-ssl-validation \
+  ;
 fi
 
 if ! cf orgs | grep $APPUSER_ORG; then
