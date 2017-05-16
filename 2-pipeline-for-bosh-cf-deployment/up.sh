@@ -18,7 +18,7 @@ CONCOURSE_PASSWORD=${CONCOURSE_PASSWORD:?"env!"}
 CONCOURSE_BOSH_ENV=${CONCOURSE_BOSH_ENV:?"env!"}
 DOMAIN=${DOMAIN:?"env!"}
 CONCOURSE_TARGET=${CONCOURSE_TARGET:?"env!"}
-CONCOURSE_PIPELINE=${CONCOURSE_PIPELINE:?"env!"}
+CONCOURSE_OPS_PIPELINE=${CONCOURSE_OPS_PIPELINE:?"env!"}
 BBL_LB_CERT=${BBL_LB_CERT:?"env!"}
 BBL_LB_KEY=${BBL_LB_KEY:?"env!"} STATE_REPO_URL=${STATE_REPO_URL:?"env!"}
 STATE_REPO_PRIVATE_KEY=${STATE_REPO_PRIVATE_KEY:?"env!"}
@@ -73,27 +73,27 @@ system_domain: $DOMAIN
 EOF
 fi
 
-if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
+if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_OPS_PIPELINE; then
   fly set-pipeline \
     --target $CONCOURSE_TARGET \
-    --pipeline $CONCOURSE_PIPELINE \
+    --pipeline $CONCOURSE_OPS_PIPELINE \
     --load-vars-from state/cf-deployment-pipeline-vars.yml \
     --config cf-deployment-pipeline.yml \
     --non-interactive \
   ;
 fi
 
-if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/update-bosh | grep "succeeded" >/dev/null; then
+if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_OPS_PIPELINE/update-bosh | grep "succeeded" >/dev/null; then
   echo "Exiting... update-bosh hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"
   exit 1
 fi
 
-if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/update-stemcells | grep "succeeded" >/dev/null; then
+if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_OPS_PIPELINE/update-stemcells | grep "succeeded" >/dev/null; then
   echo "Exiting... update-stemcells hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"
   exit 1
 fi
 
-if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/update-cf | grep "succeeded" >/dev/null; then
+if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_OPS_PIPELINE/update-cf | grep "succeeded" >/dev/null; then
   echo "Exiting... update-cf hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"
   exit 1
 fi
