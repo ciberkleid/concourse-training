@@ -1,0 +1,23 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: bosh/cli
+    tag: go-1.8
+
+inputs:
+- name: bosh-deployment
+- name: deployment-state
+
+outputs:
+- name: updated-deployment-state
+
+run:
+  path: pipeline-tasks/deploy-director/task
+
+params:
+  STATE_DIR:
+  BOSH_DEPLOYMENT_DIR:
+  PIPELINE_DIR:
