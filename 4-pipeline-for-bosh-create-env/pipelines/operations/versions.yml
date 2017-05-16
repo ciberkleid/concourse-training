@@ -1,0 +1,20 @@
+- type: replace
+  path: /releases/name=bosh
+  value:
+    name: bosh
+    sha1: 16966c90fb3535a2de6e2e19bf8252524d2f2d27
+    url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-260.5-ubuntu-trusty-3312.15-20170124-025145-688314225-20170124025151.tgz?versionId=XdnsJBm4uh.wTJ1aKy5BZ.B.NtBOZFTD
+    version: 260.5
+- type: replace
+  path: /releases/name=bosh-aws-cpi
+  value:
+    name: bosh-aws-cpi
+    sha1: 8e40a9ff892204007889037f094a1b0d23777058
+    url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=60
+    version: 60
+- type: replace
+  path: /resource_pools/name=vms/stemcell?
+  value:
+    sha1: f5e78f61b8026377300db544e9d3ca0b89516af3
+    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3312.15
+

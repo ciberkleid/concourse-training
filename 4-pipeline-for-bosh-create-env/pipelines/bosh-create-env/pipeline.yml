@@ -1,0 +1,104 @@
+groups:
+- name: create-env-deployment
+  jobs:
+  - create-infrastructure
+  - deploy-director
+  - deploy-cf
+resources:
+- name: deployment-state
+  type: git
+  source:
+    branch: master
+    uri: {{state_repo_url}}
+    private_key: {{state_repo_private_key}}
+- name: my-pipeline
+  type: git
+  source:
+    branch: master
+    uri: {{pipeline_repo_url}}
+- name: cf-deployment
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+- name: bosh-deployment
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/bosh-deployment.git
+- name: cf-deployment-concourse-tasks
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+jobs:
+- name: create-infrastructure
+  serial: true
+  build_logs_to_retain: 10
+  plan:
+  - aggregate:
+    - get: deployment-state
+    - get: my-pipeline
+    - get: cf-deployment-concourse-tasks
+  - task: bbl-up
+    file: cf-deployment-concourse-tasks/bbl-up/task.yml
+    params:
+      BBL_IAAS: aws
+      BBL_AWS_REGION: {{bbl_aws_region}}
+      BBL_AWS_ACCESS_KEY_ID: {{bbl_aws_access_key_id}}
+      BBL_AWS_SECRET_ACCESS_KEY: {{bbl_aws_secret_access_key}}
+      BBL_LB_CERT: {{bbl_lbs_ssl_cert}}
+      BBL_LB_KEY: {{bbl_lbs_ssl_signing_key}}
+      BBL_ENV_NAME: {{bbl_env_name}}
+    input_mapping:
+      bbl-state: deployment-state
+      updated-bbl-state: deployment-state
+    ensure:
+      put: deployment-state
+      params:
+        repository: updated-bbl-state
+        rebase: true
+# bosh delete-env using bbl state
+- name: deploy-director
+  serial: true
+  build_logs_to_retain: 10
+  plan:
+  - aggregate:
+    - get: deployment-state
+      passed: [create-infrastructure]
+    - get: my-pipeline
+      passed: [create-infrastructure]
+    - get: bosh-deployment
+  - task: bosh-create-env
+    file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task.yml
+    params:
+      STATE_DIR: deployment-state
+      PIPELINE_DIR: my-pipeline/4-pipeline-for-bosh-create-env/pipelines
+      BOSH_DEPLOYMENT_DIR: bosh-deployment
+    ensure:
+      put: deployment-state
+      params:
+        repository: deployment-state
+        rebase: true
+- name: deploy-cf
+  serial: true
+  build_logs_to_retain: 10
+  plan:
+  - aggregate:
+    - get: deployment-state
+      passed: [deploy-director]
+    - get: my-pipeline
+      passed: [deploy-director]
+    - get: cf-deployment
+  - task: bosh-deploy-cf
+    file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-cf/task.yml
+    params:
+      STATE_DIR: deployment-state
+      PIPELINE_DIR: my-pipeline/4-pipeline-for-bosh-create-env/pipelines
+      CF_DEPLOYMENT_DIR: cf-deployment
+      STEMCELL_URL: "https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3363.20"
+    ensure:
+      put: deployment-state
+      params:
+        repository: deployment-state
+        rebase: true

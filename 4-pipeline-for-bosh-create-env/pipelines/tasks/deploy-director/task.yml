@@ -1,0 +1,24 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: concourse/bosh-cli
+    tag: latest
+
+inputs:
+- name: deployment-state
+- name: my-pipeline
+- name: bosh-deployment
+
+outputs:
+- name: updated-deployment-state
+
+run:
+  path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task
+
+params:
+  STATE_DIR: ~
+  PIPELINE_DIR: ~
+  BOSH_DEPLOYMENT_DIR: ~
