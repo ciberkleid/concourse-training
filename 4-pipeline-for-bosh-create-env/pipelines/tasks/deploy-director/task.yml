@@ -8,6 +8,7 @@ image_resource:
     tag: go-1.8
 
 inputs:
+- name: my-pipeline
 - name: bosh-deployment
 - name: deployment-state
 
