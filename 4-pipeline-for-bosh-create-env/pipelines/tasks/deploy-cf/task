@@ -4,9 +4,15 @@ true ${PIPELINE_DIR:?"!"}
 true ${CF_DEPLOYMENT_DIR:?"!"}
 true ${STATE_DIR:?"!"}
 
+source $STATE_DIR/director/bosh-env.sh
+true ${BOSH_CLIENT:?"!"}
+true ${BOSH_CLIENT_SECRET:?"!"}
+true ${BOSH_ENVIRONMENT:?"!"}
+true ${BOSH_CA_CERT:?"!"}
+
 bosh deploy $CF_DEPLOYMENT_DIR/cf-deployment.yml \
-  --vars-file=$STATE_DIR/vars.yml \
-  --vars-store=$STATE_DIR/creds.yml \
+  --vars-file=$STATE_DIR/cf/vars.yml \
+  --vars-store=$STATE_DIR/cf/creds.yml \
   -o $CF_DEPLOYMENT_DIR/operations/aws.yml \
   -o $CF_DEPLOYMENT_DIR/operations/change-logging-port-for-aws-elb.yml \
   -o $CF_DEPLOYMENT_DIR/operations/scale-to-one-az.yml \
