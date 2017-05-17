@@ -16,7 +16,11 @@ outputs:
 - name: updated-deployment-state
 
 run:
-  path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task
+  #path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task
+  path: /bin/bash
+  args:
+  - "-c"
+  - "find ."
 
 params:
   STATE_DIR: ~
