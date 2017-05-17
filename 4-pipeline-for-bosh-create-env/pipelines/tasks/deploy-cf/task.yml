@@ -22,3 +22,4 @@ params:
   STATE_DIR: ~
   PIPELINE_DIR: ~
   CF_DEPLOYMENT_DIR: ~
+  STEMCELL_URL: ~

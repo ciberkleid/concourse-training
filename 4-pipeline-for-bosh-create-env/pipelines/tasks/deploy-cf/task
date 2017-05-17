@@ -3,6 +3,7 @@
 true ${PIPELINE_DIR:?"!"}
 true ${CF_DEPLOYMENT_DIR:?"!"}
 true ${STATE_DIR:?"!"}
+true ${STEMCELL_URL:?"!"}
 
 source $STATE_DIR/director/bosh-env.sh
 true ${BOSH_CLIENT:?"!"}
@@ -11,6 +12,11 @@ true ${BOSH_ENVIRONMENT:?"!"}
 true ${BOSH_CA_CERT:?"!"}
 
 bosh alias-env bosh-env
+
+bosh upload-stemcell \
+  --environment bosh-env \
+  $STEMCELL_URL \
+;
 
 bosh deploy \
   $CF_DEPLOYMENT_DIR/cf-deployment.yml \
