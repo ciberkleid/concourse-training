@@ -15,6 +15,7 @@ bosh alias-env bosh-env
 bosh deploy \
   $CF_DEPLOYMENT_DIR/cf-deployment.yml \
   --environment bosh-env
+  --deployment cf
   --vars-file=$STATE_DIR/cf/vars.yml \
   --vars-store=$STATE_DIR/cf/creds.yml \
   -o $CF_DEPLOYMENT_DIR/operations/aws.yml \
