@@ -1,0 +1,14 @@
+#!/bin/bash
+
+true ${PIPELINE_DIR:?"!"}
+true ${CF_DEPLOYMENT_DIR:?"!"}
+true ${STATE_DIR:?"!"}
+
+bosh deploy $CF_DEPLOYMENT_DIR/cf-deployment.yml \
+  --state=$STATE_DIR/state.json \
+  --vars-file=$STATE_DIR/vars.yml \
+  --vars-store=$STATE_DIR/creds.yml \
+  -o $CF_DEPLOYMENT_DIR/operations/aws.yml \
+  -o $CF_DEPLOYMENT_DIR/operations/change-logging-port-for-aws-elb.yml \
+  -o $CF_DEPLOYMENT_DIR/operations/scale-to-one-az.yml \
+;

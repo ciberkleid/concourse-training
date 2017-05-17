@@ -10,15 +10,15 @@ image_resource:
 inputs:
 - name: deployment-state
 - name: my-pipeline
-- name: bosh-deployment
+- name: cf-deployment
 
 outputs:
 - name: updated-deployment-state
 
 run:
-  path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task
+  path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-cf/task
 
 params:
   STATE_DIR: ~
   PIPELINE_DIR: ~
-  BOSH_DEPLOYMENT_DIR: ~
+  CF_DEPLOYMENT_DIR: ~

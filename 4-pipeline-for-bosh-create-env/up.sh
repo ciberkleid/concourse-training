@@ -32,8 +32,6 @@ true ${PIPELINE_REPO_URL:?"!"}
 
 set -x
 
-TASKS_DIR="$(git rev-parse --show-prefix)tasks"
-
 mkdir -p bin
 PATH=$(pwd)/bin:$PATH
 
@@ -79,7 +77,6 @@ bbl_aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
 bbl_lbs_ssl_cert: !!binary $(echo "$BBL_LB_CERT" | base64)
 bbl_lbs_ssl_signing_key: !!binary $(echo "$BBL_LB_KEY" | base64)
 pipeline_repo_url: $PIPELINE_REPO_URL
-tasks_dir: $TASKS_DIR
 state_repo_url: $STATE_REPO_URL
 state_repo_private_key: !!binary $(echo "$STATE_REPO_PRIVATE_KEY" | base64)
 system_domain: $DOMAIN
