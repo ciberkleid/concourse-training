@@ -9,25 +9,27 @@ if ! [ -d state/ ]; then
 fi
 
 source state/env.sh
-true ${AWS_ACCESS_KEY_ID:?"env!"}
-true ${AWS_SECRET_ACCESS_KEY:?"env!"}
-true ${AWS_DEFAULT_REGION:?"env!"}
-true ${CONCOURSE_DOMAIN:?"env!"}
-true ${CONCOURSE_USERNAME:?"env!"}
-true ${CONCOURSE_PASSWORD:?"env!"}
-true ${CONCOURSE_BOSH_ENV:?"env!"}
-true ${DOMAIN:?"env!"}
-true ${CONCOURSE_TARGET:?"env!"}
-true ${CONCOURSE_PIPELINE:?"env!"}
-true ${BBL_LB_CERT:?"env!"}
-true ${BBL_LB_KEY:?"env!"}
-true ${STATE_REPO_URL:?"env!"}
-true ${STATE_REPO_PRIVATE_KEY:?"env!"}
-true ${UAA_ADMIN_SECRET:?"env!"}
-true ${APPUSER_USERNAME:?"env!"}
-true ${APPUSER_PASSWORD:?"env!"}
-true ${APPUSER_ORG:?"env!"}
-true ${APPUSER_SPACE:?"env!"}
+true ${AWS_ACCESS_KEY_ID:?"!"}
+true ${AWS_SECRET_ACCESS_KEY:?"!"}
+true ${AWS_DEFAULT_REGION:?"!"}
+true ${CONCOURSE_DOMAIN:?"!"}
+true ${CONCOURSE_USERNAME:?"!"}
+true ${CONCOURSE_PASSWORD:?"!"}
+true ${CONCOURSE_BOSH_ENV:?"!"}
+true ${DOMAIN:?"!"}
+true ${CONCOURSE_TARGET:?"!"}
+true ${CONCOURSE_PIPELINE:?"!"}
+true ${BBL_LB_CERT:?"!"}
+true ${BBL_LB_KEY:?"!"}
+true ${STATE_REPO_URL:?"!"}
+true ${STATE_REPO_PRIVATE_KEY:?"!"}
+true ${UAA_ADMIN_SECRET:?"!"}
+true ${APPUSER_USERNAME:?"!"}
+true ${APPUSER_PASSWORD:?"!"}
+true ${APPUSER_ORG:?"!"}
+true ${APPUSER_SPACE:?"!"}
+true ${PIPELINE_REPO_URL:?"!"}
+
 set -x
 
 TASKS_DIR="$(git rev-parse --show-prefix)tasks"
@@ -76,10 +78,11 @@ bbl_aws_access_key_id: $AWS_ACCESS_KEY_ID
 bbl_aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
 bbl_lbs_ssl_cert: !!binary $(echo "$BBL_LB_CERT" | base64)
 bbl_lbs_ssl_signing_key: !!binary $(echo "$BBL_LB_KEY" | base64)
+pipeline_repo_url: $PIPELINE_REPO_URL
+tasks_dir: $TASKS_DIR
 state_repo_url: $STATE_REPO_URL
 state_repo_private_key: !!binary $(echo "$STATE_REPO_PRIVATE_KEY" | base64)
 system_domain: $DOMAIN
-tasks_dir: $TASKS_DIR
 EOF
 #fi
 

@@ -2,8 +2,7 @@ groups:
 - name: create-env-deployment
   jobs:
   - create-infrastructure
-  - configure-director
-#  - deploy-director
+  - deploy-director
 #  - configure-cf
 #  - upgrade-cf
 resources:
@@ -15,38 +14,41 @@ resources:
 #    private_key: {{state_repo_private_key}}
 #    paths:
 #    - deployment-vars.yml
-- name: bbl-state
+- name: deployment-state
   type: git
   source:
     branch: master
     uri: {{state_repo_url}}
     private_key: {{state_repo_private_key}}
-    paths:
-    - bbl-state.json
-- name: cf-deployment
+- name: pipeline-tasks
   type: git
   source:
     branch: master
-    uri: https://github.com/cloudfoundry/cf-deployment.git
-- name: cf-deployment-concourse-tasks
-  type: git
-  source:
-    branch: master
-    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+    uri: {{pipeline_repo_url}}
+#- name: cf-deployment
+#  type: git
+#  source:
+#    branch: master
+#    uri: https://github.com/cloudfoundry/cf-deployment.git
 - name: bosh-deployment
   type: git
   source:
     branch: master
     uri: https://github.com/cloudfoundry/bosh-deployment.git
+- name: cf-deployment-concourse-tasks
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 jobs:
 - name: create-infrastructure
   serial: true
   build_logs_to_retain: 10
   plan:
   - aggregate:
-    - get: bbl-state
+    - get: deployment-state
+    - get: pipeline-tasks
     - get: cf-deployment-concourse-tasks
-    - get: cf-deployment
   - task: bbl-up
     file: cf-deployment-concourse-tasks/bbl-up/task.yml
     params:
@@ -58,21 +60,24 @@ jobs:
       BBL_LB_KEY: {{bbl_lbs_ssl_signing_key}}
       BBL_ENV_NAME: {{bbl_env_name}}
     ensure:
-      put: bbl-state
+      put: deployment-state
       params:
-        repository: updated-bbl-state
+        repository: updated-deployment-state
         rebase: true
 - name: deploy-director
   serial: true
   build_logs_to_retain: 10
   plan:
   - aggregate:
-    - get: bosh-deployment
+    - get: deployment-state
+      passed: [create-infrastructure]
     - get: pipeline-tasks
+      passed: [create-infrastructure]
+    - get: bosh-deployment
   - task: generate-manifests
     file: pipeline-dir/4-pipeline-for-bosh-create-env/tasks/deploy-director/task.yml
-    input-mapping:
-			pipeline-tasks: pipeline-dir/4-pipeline-for-bosh-create-env/tasks
+    input_mapping:
+      pipeline-tasks: pipeline-dir/4-pipeline-for-bosh-create-env/tasks
     ensure:
       put: deployment-state
       params:
