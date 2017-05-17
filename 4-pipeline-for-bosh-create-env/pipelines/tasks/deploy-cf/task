@@ -21,4 +21,5 @@ bosh deploy \
   -o $CF_DEPLOYMENT_DIR/operations/aws.yml \
   -o $CF_DEPLOYMENT_DIR/operations/change-logging-port-for-aws-elb.yml \
   -o $CF_DEPLOYMENT_DIR/operations/scale-to-one-az.yml \
+  --non-interactive \
 ;
