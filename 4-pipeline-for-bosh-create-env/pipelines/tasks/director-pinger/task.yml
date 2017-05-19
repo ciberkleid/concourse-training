@@ -8,10 +8,10 @@ image_resource:
     tag: latest
 
 inputs:
-- name: task-dir
+- name: my-pipeline
 
 run:
-  path: task-dir/task
+  path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/director-pinger/task
 
 params:
   DIRECTOR_IP: ~
