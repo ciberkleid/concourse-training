@@ -72,13 +72,14 @@ jobs:
   - task: bosh-create-env
     file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task.yml
     params:
-      STATE_DIR: deployment-state
       PIPELINE_DIR: my-pipeline/4-pipeline-for-bosh-create-env/pipelines
-      BOSH_DEPLOYMENT_DIR: bosh-deployment
+    input_mapping:
+      deployment-state: deployment-state
+      updated-deployment-state: deployment-state
     ensure:
       put: deployment-state
       params:
-        repository: deployment-state
+        repository: updated-deployment-state
         rebase: true
 - name: deploy-cf
   serial: true
@@ -93,12 +94,13 @@ jobs:
   - task: bosh-deploy-cf
     file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-cf/task.yml
     params:
-      STATE_DIR: deployment-state
       PIPELINE_DIR: my-pipeline/4-pipeline-for-bosh-create-env/pipelines
-      CF_DEPLOYMENT_DIR: cf-deployment
       STEMCELL_URL: "https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3363.20"
+    input_mapping:
+      deployment-state: deployment-state
+      updated-deployment-state: deployment-state
     ensure:
       put: deployment-state
       params:
-        repository: deployment-state
+        repository: updated-deployment-state
         rebase: true

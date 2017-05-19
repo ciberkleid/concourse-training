@@ -1,10 +1,10 @@
 #!/bin/bash
 
 true ${PIPELINE_DIR:?"!"}
-true ${BOSH_DEPLOYMENT_DIR:?"!"}
-true ${STATE_DIR:?"!"}
+true ${IN_STATE_DIR:?"!"}
+true ${OUT_STATE_DIR:?"!"}
 
-source $STATE_DIR/director/bosh-env.sh
+source $IN_STATE_DIR/director/bosh-env.sh
 true ${BOSH_CLIENT:?"!"}
 true ${BOSH_CLIENT_SECRET:?"!"}
 true ${BOSH_ENVIRONMENT:?"!"}
@@ -14,17 +14,18 @@ apt-get update
 apt-get install -y build-essential zlibc zlib1g-dev ruby ruby-dev openssl libxslt-dev libxml2-dev libssl-dev libreadline6 libreadline6-dev libyaml-dev libsqlite3-dev sqlite3
 
 bosh create-env \
-  $BOSH_DEPLOYMENT_DIR/bosh.yml \
-  --state=$STATE_DIR/director/state.json \
-  --vars-file=$STATE_DIR/director/vars.yml \
-  --vars-store=$STATE_DIR/director/creds.yml \
-  -o $BOSH_DEPLOYMENT_DIR/aws/cpi.yml \
-  -o $BOSH_DEPLOYMENT_DIR/external-ip-with-registry-not-recommended.yml \
+  bosh-deployment/bosh.yml \
+  --state=$IN_STATE_DIR/director/state.json \ --vars-file=$IN_STATE_DIR/director/vars.yml \
+  --vars-store=$IN_STATE_DIR/director/creds.yml \
+  -o bosh-deployment/aws/cpi.yml \
+  -o bosh-deployment/external-ip-with-registry-not-recommended.yml \
   -o $PIPELINE_DIR/operations/versions.yml \
   --non-interactive \
 ;
 
 bosh update-cloud-config \
-  $STATE_DIR/director/cloud-config.yml \
+  $IN_STATE_DIR/director/cloud-config.yml \
   --non-interactive \
 ;
+
+trap "cd $OUT_STATE_DIR; cp -R $IN_STATE_DIR/* ./; git add -A; git ci -m'Updated state' --author 'CI <ci@young.io>'" EXIT

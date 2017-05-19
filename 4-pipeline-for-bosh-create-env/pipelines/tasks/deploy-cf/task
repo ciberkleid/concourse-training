@@ -1,11 +1,11 @@
 #!/bin/bash
 
 true ${PIPELINE_DIR:?"!"}
-true ${CF_DEPLOYMENT_DIR:?"!"}
-true ${STATE_DIR:?"!"}
 true ${STEMCELL_URL:?"!"}
+true ${IN_STATE_DIR:?"!"}
+true ${OUT_STATE_DIR:?"!"}
 
-source $STATE_DIR/director/bosh-env.sh
+source $IN_STATE_DIR/director/bosh-env.sh
 true ${BOSH_CLIENT:?"!"}
 true ${BOSH_CLIENT_SECRET:?"!"}
 true ${BOSH_ENVIRONMENT:?"!"}
@@ -19,13 +19,15 @@ bosh upload-stemcell \
 ;
 
 bosh deploy \
-  $CF_DEPLOYMENT_DIR/cf-deployment.yml \
+  cf-deployment/cf-deployment.yml \
   --environment bosh-env \
   --deployment cf \
-  --vars-file=$STATE_DIR/cf/vars.yml \
-  --vars-store=$STATE_DIR/cf/creds.yml \
-  -o $CF_DEPLOYMENT_DIR/operations/aws.yml \
-  -o $CF_DEPLOYMENT_DIR/operations/change-logging-port-for-aws-elb.yml \
-  -o $CF_DEPLOYMENT_DIR/operations/scale-to-one-az.yml \
+  --vars-file=$IN_STATE_DIR/cf/vars.yml \
+  --vars-store=$IN_STATE_DIR/cf/creds.yml \
+  -o cf-deployment/operations/aws.yml \
+  -o cf-deployment/operations/change-logging-port-for-aws-elb.yml \
+  -o cf-deployment/operations/scale-to-one-az.yml \
   --non-interactive \
 ;
+
+trap "cd $OUT_STATE_DIR; cp -R $IN_STATE_DIR/* ./; git add -A; git ci -m'Updated state' --author 'CI <ci@young.io>'" EXIT

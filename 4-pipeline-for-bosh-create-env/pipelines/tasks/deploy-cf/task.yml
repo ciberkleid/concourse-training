@@ -19,7 +19,7 @@ run:
   path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-cf/task
 
 params:
-  STATE_DIR: ~
   PIPELINE_DIR: ~
-  CF_DEPLOYMENT_DIR: ~
   STEMCELL_URL: ~
+  IN_STATE_DIR: deployment-state
+  OUT_STATE_DIR: updated-deployment-state

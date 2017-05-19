@@ -19,6 +19,6 @@ run:
   path: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task
 
 params:
-  STATE_DIR: ~
   PIPELINE_DIR: ~
-  BOSH_DEPLOYMENT_DIR: ~
+  IN_STATE_DIR: deployment-state
+  OUT_STATE_DIR: updated-deployment-state
