@@ -4,6 +4,7 @@ groups:
   - create-infrastructure
   - deploy-director
   - deploy-cf
+  - director-pinger
 resources:
 - name: deployment-state
   type: git
@@ -104,3 +105,12 @@ jobs:
       params:
         repository: updated-deployment-state
         rebase: true
+- name: director-pinger
+  plan:
+  - get: my-pipeline
+  - task: director-pinger
+    file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/director-pinger/task.yml
+    params:
+      DIRECTOR_IP: 34.224.92.72
+    input_mapping:
+      my-task-dir: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/director-pinger

@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+    tag: latest
+
+inputs:
+- name: my-task-dir
+
+run:
+  path: my-task-dir/task
+
+params:
+  DIRECTOR_IP: ~

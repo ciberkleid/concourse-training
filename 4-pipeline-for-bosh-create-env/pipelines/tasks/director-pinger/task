@@ -1,0 +1,6 @@
+#!/bin/sh
+
+apk update
+apk add curl
+
+curl -v -k https://$DIRECTOR_IP:25555/info
