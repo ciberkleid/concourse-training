@@ -8,10 +8,10 @@ image_resource:
     tag: latest
 
 inputs:
-- name: my-task-dir
+- name: task-dir
 
 run:
-  path: my-task-dir/task
+  path: task-dir/task
 
 params:
   DIRECTOR_IP: ~

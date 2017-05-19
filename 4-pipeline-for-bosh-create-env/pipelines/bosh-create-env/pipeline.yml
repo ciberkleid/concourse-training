@@ -113,4 +113,4 @@ jobs:
     params:
       DIRECTOR_IP: 34.224.92.72
     input_mapping:
-      my-task-dir: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/director-pinger
+      task: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/director-pinger/task
