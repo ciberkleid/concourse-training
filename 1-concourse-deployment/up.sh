@@ -9,19 +9,19 @@ if ! [ -d state/ ]; then
 fi
 
 source ./state/env.sh
-AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?"Missing env"}
-AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?"Missing env"}
-AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:?"Missing env"}
-CONCOURSE_USERNAME=${CONCOURSE_USERNAME:?"Missing env"}
-CONCOURSE_PASSWORD=${CONCOURSE_PASSWORD:?"Missing env"}
-CONCOURSE_TARGET=${CONCOURSE_TARGET:?"env!"}
-CONCOURSE_DB_NAME=${CONCOURSE_DB_NAME:?"Missing env"}
-CONCOURSE_DB_ROLE=${CONCOURSE_DB_ROLE:?"Missing env"}
-CONCOURSE_DB_PASSWORD=${CONCOURSE_DB_PASSWORD:?"Missing env"}
-VM_KEYPAIR_NAME=${VM_KEYPAIR_NAME:?"Missing env"}
-DOMAIN=${DOMAIN:?"Missing env"}
-CONCOURSE_BOSH_ENV=${CONCOURSE_BOSH_ENV:?"Missing env"}
-CONCOURSE_DEPLOYMENT_NAME=${CONCOURSE_DEPLOYMENT_NAME:?"Missing env"}
+: ${AWS_ACCESS_KEY_ID:?!}
+: ${AWS_SECRET_ACCESS_KEY:?"!"}
+: ${AWS_DEFAULT_REGION:?"!"}
+: ${CONCOURSE_USERNAME:?"!"}
+: ${CONCOURSE_PASSWORD:?"!"}
+: ${CONCOURSE_TARGET:?"!"}
+: ${CONCOURSE_DB_NAME:?"!"}
+: ${CONCOURSE_DB_ROLE:?"!"}
+: ${CONCOURSE_DB_PASSWORD:?"!"}
+: ${VM_KEYPAIR_NAME:?"!"}
+: ${DOMAIN:?"!"}
+: ${CONCOURSE_BOSH_ENV:?"!"}
+: ${CONCOURSE_DEPLOYMENT_NAME:?"!"}
 set -x
 
 
@@ -110,31 +110,24 @@ if ! bosh stemcells -e $CONCOURSE_BOSH_ENV | grep bosh-aws-xen-hvm-ubuntu-trusty
 fi
 
 CONCOURSE_LBS_DOMAIN=$($bbl_cmd lbs | sed 's/.*\[\(.*\)\]/\1/')  # Format: Concourse LB: stack-bbl-Concours-1RABRZ7DBDC7F [stack-bbl-Concours-1RABRZ7DBDC7F-585187859.us-west-2.elb.amazonaws.com]
-if ! [ -f state/concourse-creds.yml ]; then
-  # from https://github.com/cloudfoundry/bosh-bootloader/blob/master/docs/concourse_aws.md
-  cat > state/concourse-creds.yml <<EOF
-concourse_external_url: http://$CONCOURSE_LBS_DOMAIN
-concourse_basic_auth_username: $CONCOURSE_USERNAME
-concourse_basic_auth_password: $CONCOURSE_PASSWORD
-concourse_atc_db_name: $CONCOURSE_DB_NAME
-concourse_atc_db_role: $CONCOURSE_DB_ROLE
-concourse_atc_db_password: $CONCOURSE_DB_PASSWORD
-concourse_vm_type: t2.small
-concourse_worker_vm_extensions: 50GB_ephemeral_disk
-concourse_web_vm_extensions: lb
-concourse_db_disk_type: 5GB
-EOF
-fi
-
-if ! bosh deployments -e $CONCOURSE_BOSH_ENV | grep $CONCOURSE_DEPLOYMENT_NAME; then
-  bosh deploy \
-    --non-interactive \
-    --environment $CONCOURSE_BOSH_ENV \
-    --deployment $CONCOURSE_DEPLOYMENT_NAME \
-    --vars-file state/concourse-creds.yml \
-    concourse-deployment.yml \
-  ;
-fi
+bosh deploy \
+  --non-interactive \
+  --environment $CONCOURSE_BOSH_ENV \
+  --deployment $CONCOURSE_DEPLOYMENT_NAME \
+  --vars-store state/vars-store.yml \
+  -v concourse_deployment_name=$CONCOURSE_DEPLOYMENT_NAME \
+  -v concourse_external_url=http://$CONCOURSE_LBS_DOMAIN \
+  -v concourse_basic_auth_username=$CONCOURSE_USERNAME \
+  -v concourse_basic_auth_password=$CONCOURSE_PASSWORD \
+  -v concourse_atc_db_name=$CONCOURSE_DB_NAME \
+  -v concourse_atc_db_role=$CONCOURSE_DB_ROLE \
+  -v concourse_atc_db_password=$CONCOURSE_DB_PASSWORD \
+  -v concourse_vm_type=t2.small \
+  -v concourse_worker_vm_extensions=50GB_ephemeral_disk \
+  -v concourse_web_vm_extensions=lb \
+  -v concourse_db_disk_type=5GB \
+  concourse-deployment.yml \
+;
 
 if ! [ -f bin/fly ]; then
   curl -L "http://$CONCOURSE_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly

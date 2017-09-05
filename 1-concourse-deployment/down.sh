@@ -32,7 +32,7 @@ export AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION
 
 if [ -f state/bbl-state.json ] && bosh deployments -e $CONCOURSE_BOSH_ENV | grep $CONCOURSE_DEPLOYMENT_NAME; then
-  bosh delete-deployment $CONCOURSE_DEPLOYMENT_NAME;
+  bosh delete-deployment -d $CONCOURSE_DEPLOYMENT_NAME;
 fi
 
 if [ -f state/concourse-creds.yml ]; then
