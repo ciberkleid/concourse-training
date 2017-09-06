@@ -15,7 +15,8 @@ apt-get install -y build-essential zlibc zlib1g-dev ruby ruby-dev openssl libxsl
 
 bosh create-env \
   bosh-deployment/bosh.yml \
-  --state=$IN_STATE_DIR/director/state.json \ --vars-file=$IN_STATE_DIR/director/vars.yml \
+  --state=$IN_STATE_DIR/director/state.json \
+  --vars-file=$IN_STATE_DIR/director/vars.yml \
   --vars-store=$IN_STATE_DIR/director/creds.yml \
   -o bosh-deployment/aws/cpi.yml \
   -o bosh-deployment/external-ip-with-registry-not-recommended.yml \
