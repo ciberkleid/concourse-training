@@ -20,17 +20,18 @@ resources:
 - name: cf-deployment
   type: git
   source:
-    branch: master
+    branch: v0.4.0
     uri: https://github.com/cloudfoundry/cf-deployment.git
 - name: bosh-deployment
   type: git
   source:
     branch: master
+    tag_filter: ab08791c91
     uri: https://github.com/cloudfoundry/bosh-deployment.git
 - name: cf-deployment-concourse-tasks
   type: git
   source:
-    branch: master
+    branch: v3.2
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 jobs:
 - name: create-infrastructure
@@ -52,6 +53,8 @@ jobs:
       BBL_LB_KEY: {{bbl_lbs_ssl_signing_key}}
       BBL_ENV_NAME: {{bbl_env_name}}
     input_mapping:
+      bosh-deployment: bosh-deployment
+      ops-files: bosh-deployment
       bbl-state: deployment-state
       updated-bbl-state: deployment-state
     ensure:
@@ -98,6 +101,7 @@ jobs:
       PIPELINE_DIR: my-pipeline/4-pipeline-for-bosh-create-env/pipelines
       STEMCELL_URL: "https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3363.20"
     input_mapping:
+      cf-deployment: cf-deployment
       deployment-state: deployment-state
       updated-deployment-state: deployment-state
     ensure:
@@ -112,5 +116,3 @@ jobs:
     file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/director-pinger/task.yml
     params:
       DIRECTOR_IP: 34.224.92.72
-    input_mapping:
-      task: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/director-pinger/task

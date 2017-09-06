@@ -9,27 +9,26 @@ if ! [ -d state/ ]; then
 fi
 
 source state/env.sh
-true ${AWS_ACCESS_KEY_ID:?"!"}
-true ${AWS_SECRET_ACCESS_KEY:?"!"}
-true ${AWS_DEFAULT_REGION:?"!"}
-true ${CONCOURSE_DOMAIN:?"!"}
-true ${CONCOURSE_USERNAME:?"!"}
-true ${CONCOURSE_PASSWORD:?"!"}
-true ${CONCOURSE_BOSH_ENV:?"!"}
-true ${DOMAIN:?"!"}
-true ${CONCOURSE_TARGET:?"!"}
-true ${CONCOURSE_PIPELINE:?"!"}
-true ${BBL_LB_CERT:?"!"}
-true ${BBL_LB_KEY:?"!"}
-true ${STATE_REPO_URL:?"!"}
-true ${STATE_REPO_PRIVATE_KEY:?"!"}
-true ${UAA_ADMIN_SECRET:?"!"}
-true ${APPUSER_USERNAME:?"!"}
-true ${APPUSER_PASSWORD:?"!"}
-true ${APPUSER_ORG:?"!"}
-true ${APPUSER_SPACE:?"!"}
-true ${PIPELINE_REPO_URL:?"!"}
-
+: ${AWS_ACCESS_KEY_ID:?"!"}
+: ${AWS_SECRET_ACCESS_KEY:?"!"}
+: ${AWS_DEFAULT_REGION:?"!"}
+: ${CONCOURSE_DOMAIN:?"!"}
+: ${CONCOURSE_USERNAME:?"!"}
+: ${CONCOURSE_PASSWORD:?"!"}
+: ${CONCOURSE_BOSH_ENV:?"!"}
+: ${DOMAIN:?"!"}
+: ${CONCOURSE_TARGET:?"!"}
+: ${CONCOURSE_PIPELINE:?"!"}
+: ${BBL_LB_CERT:?"!"}
+: ${BBL_LB_KEY:?"!"}
+: ${STATE_REPO_URL:?"!"}
+: ${STATE_REPO_PRIVATE_KEY:?"!"}
+: ${UAA_ADMIN_SECRET:?"!"}
+: ${APPUSER_USERNAME:?"!"}
+: ${APPUSER_PASSWORD:?"!"}
+: ${APPUSER_ORG:?"!"}
+: ${APPUSER_SPACE:?"!"}
+: ${PIPELINE_REPO_URL:?"!"}
 set -x
 
 mkdir -p bin
@@ -59,39 +58,30 @@ if ! uaac --version; then
   gem install uaac
 fi
 
-if ! fly targets | grep $CONCOURSE_TARGET; then
-  fly login \
-    --target $CONCOURSE_TARGET \
-    --concourse-url "http://$CONCOURSE_DOMAIN" \
-    --username $CONCOURSE_USERNAME \
-    --password $CONCOURSE_PASSWORD \
-  ;
-fi
+fly login \
+  --target $CONCOURSE_TARGET \
+  --concourse-url "http://$CONCOURSE_DOMAIN" \
+  --username $CONCOURSE_USERNAME \
+  --password $CONCOURSE_PASSWORD \
+;
 
-if ! [ -f state/pipelines/bosh-create-env/params.yml ]; then
-  cat > state/pipelines/bosh-create-env/params.yml <<EOF
-bbl_env_name: $CONCOURSE_BOSH_ENV
-bbl_aws_region: $AWS_DEFAULT_REGION
-bbl_aws_access_key_id: $AWS_ACCESS_KEY_ID
-bbl_aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
-bbl_lbs_ssl_cert: !!binary $(echo "$BBL_LB_CERT" | base64)
-bbl_lbs_ssl_signing_key: !!binary $(echo "$BBL_LB_KEY" | base64)
-pipeline_repo_url: $PIPELINE_REPO_URL
-state_repo_url: $STATE_REPO_URL
-state_repo_private_key: !!binary $(echo "$STATE_REPO_PRIVATE_KEY" | base64)
-system_domain: $DOMAIN
-EOF
-fi
-
-if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
-  fly set-pipeline \
-    --target $CONCOURSE_TARGET \
-    --pipeline $CONCOURSE_PIPELINE \
-    --config pipelines/bosh-create-env/pipeline.yml \
-    --load-vars-from state/pipelines/bosh-create-env/params.yml \
-    --non-interactive \
-  ;
-fi
+fly set-pipeline \
+  --target $CONCOURSE_TARGET \
+  --pipeline $CONCOURSE_PIPELINE \
+  --config pipelines/bosh-create-env/pipeline.yml \
+  -v bbl_env_name=$CONCOURSE_BOSH_ENV \
+  -v bbl_aws_region=$AWS_DEFAULT_REGION \
+  -v bbl_aws_access_key_id=$AWS_ACCESS_KEY_ID \
+  -v bbl_aws_secret_access_key=$AWS_SECRET_ACCESS_KEY \
+  -v bbl_lbs_ssl_cert="$BBL_LB_CERT" \
+  -v bbl_lbs_ssl_signing_key="$BBL_LB_KEY" \
+  -v pipeline_repo_url=$PIPELINE_REPO_URL \
+  -v state_repo_url=$STATE_REPO_URL \
+  -v state_repo_private_key="$STATE_REPO_PRIVATE_KEY" \
+  -v system_domain=$DOMAIN \
+  --non-interactive \
+;
+exit
 
 if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/create-infrastructure | grep "succeeded" >/dev/null; then
   echo "Exiting... create-infrastructure hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"
