@@ -5,19 +5,22 @@ true ${IN_STATE_DIR:?"!"}
 true ${OUT_STATE_DIR:?"!"}
 
 source $IN_STATE_DIR/director/bosh-env.sh
-true ${BOSH_CLIENT:?"!"}
-true ${BOSH_CLIENT_SECRET:?"!"}
-true ${BOSH_ENVIRONMENT:?"!"}
-true ${BOSH_CA_CERT:?"!"}
+: ${BOSH_CLIENT:?"!"}
+: ${BOSH_CLIENT_SECRET:?"!"}
+: ${BOSH_ENVIRONMENT:?"!"}
+: ${BOSH_CA_CERT:?"!"}
 
+cp -r $IN_STATE_DIR/. $OUT_STATE_DIR/
+
+date > $OUT_STATE_DIR/foo
 apt-get update
 apt-get install -y build-essential zlibc zlib1g-dev ruby ruby-dev openssl libxslt-dev libxml2-dev libssl-dev libreadline6 libreadline6-dev libyaml-dev libsqlite3-dev sqlite3
 
 bosh create-env \
   bosh-deployment/bosh.yml \
-  --state=$IN_STATE_DIR/director/state.json \
-  --vars-file=$IN_STATE_DIR/director/vars.yml \
-  --vars-store=$IN_STATE_DIR/director/creds.yml \
+  --state=$OUT_STATE_DIR/director/state.json \
+  --vars-file=$OUT_STATE_DIR/director/vars.yml \
+  --vars-store=$OUT_STATE_DIR/director/creds.yml \
   -o bosh-deployment/aws/cpi.yml \
   -o bosh-deployment/external-ip-with-registry-not-recommended.yml \
   -o $PIPELINE_DIR/operations/versions.yml \
@@ -25,8 +28,8 @@ bosh create-env \
 ;
 
 bosh update-cloud-config \
-  $IN_STATE_DIR/director/cloud-config.yml \
+  $OUT_STATE_DIR/director/cloud-config.yml \
   --non-interactive \
 ;
 
-trap "cp -r $IN_STATE_DIR/ $OUT_STATE_DIR/; cd $OUT_STATE_DIR; git add -A; git ci -m'Updated state' --author 'CI <ci@young.io>'" EXIT
+trap "cd $OUT_STATE_DIR; git add -A; git config --global user.email 'ci@young.io'; git commit -m'Updated state' --author 'CI <ci@young.io>'" EXIT

@@ -89,17 +89,17 @@ if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_PIPELINE/create-infrastructur
 fi
 
 if ! [ -f state/director/bosh-env.sh ]; then
-  echo "Exiting... use bbl print-env to create state/director/bosh-env.sh"
+  echo "Exiting... use bbl print-env > state/director/bosh-env.sh"
   exit 1
 fi
 
 if ! [ -f state/director/cloud-config.yml ]; then
-  echo "Exiting... use bbl cloud-config to create state/director/cloud-config.yml"
+  echo "Exiting... use bbl cloud-config > state/director/cloud-config.yml"
   exit 1
 fi
 
 if ! [ -f state/director/state.json ]; then
-  echo "Exiting... use jq '.bosh.state' to create state/director/state.json"
+  echo "Exiting... use jq '.bosh.state' bbl-state.json > director/state.json"
   exit 1
 fi
 
