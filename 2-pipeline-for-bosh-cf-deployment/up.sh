@@ -50,38 +50,29 @@ if ! uaac --version; then
   gem install uaac
 fi
 
-if ! fly targets | grep $CONCOURSE_TARGET; then
-  fly login \
-    --target $CONCOURSE_TARGET \
-    --concourse-url "http://$CONCOURSE_DOMAIN" \
-    --username $CONCOURSE_USERNAME \
-    --password $CONCOURSE_PASSWORD \
-  ;
-fi
+fly login \
+  --target $CONCOURSE_TARGET \
+  --concourse-url "http://$CONCOURSE_DOMAIN" \
+  --username $CONCOURSE_USERNAME \
+  --password $CONCOURSE_PASSWORD \
+;
 
-if ! [ -f state/cf-deployment-pipeline-vars.yml ]; then
-  cat > state/cf-deployment-pipeline-vars.yml <<EOF
-bbl_env_name: $CONCOURSE_BOSH_ENV
-bbl_aws_region: $AWS_DEFAULT_REGION
-bbl_aws_access_key_id: $AWS_ACCESS_KEY_ID
-bbl_aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
-bbl_lbs_ssl_cert: !!binary $(echo "$BBL_LB_CERT" | base64)
-bbl_lbs_ssl_signing_key: !!binary $(echo "$BBL_LB_KEY" | base64)
-state_repo_url: $STATE_REPO_URL
-state_repo_private_key: !!binary $(echo "$STATE_REPO_PRIVATE_KEY" | base64)
-system_domain: $DOMAIN
-EOF
-fi
-
-if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_OPS_PIPELINE; then
-  fly set-pipeline \
-    --target $CONCOURSE_TARGET \
-    --pipeline $CONCOURSE_OPS_PIPELINE \
-    --load-vars-from state/cf-deployment-pipeline-vars.yml \
-    --config cf-deployment-pipeline.yml \
-    --non-interactive \
-  ;
-fi
+fly set-pipeline \
+  --target $CONCOURSE_TARGET \
+  --pipeline $CONCOURSE_OPS_PIPELINE \
+  -v bbl_env_name=$CONCOURSE_BOSH_ENV \
+  -v bbl_aws_region=$AWS_DEFAULT_REGION \
+  -v bbl_aws_access_key_id=$AWS_ACCESS_KEY_ID \
+  -v bbl_aws_secret_access_key=$AWS_SECRET_ACCESS_KEY \
+  -v bbl_lbs_ssl_cert="$BBL_LB_CERT" \
+  -v bbl_lbs_ssl_signing_key="$BBL_LB_KEY" \
+  -v state_repo_url=$STATE_REPO_URL \
+  -v state_repo_private_key="$STATE_REPO_PRIVATE_KEY" \
+  -v system_domain=$DOMAIN \
+  --config cf-deployment-pipeline.yml \
+  --non-interactive \
+;
+exit
 
 if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_OPS_PIPELINE/update-bosh | grep "succeeded" >/dev/null; then
   echo "Exiting... update-bosh hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"

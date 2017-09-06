@@ -26,11 +26,13 @@ resources:
   type: git
   source:
     branch: master
+    tag_filter: v0.4.0
     uri: https://github.com/cloudfoundry/cf-deployment.git
 - name: cf-deployment-concourse-tasks
   type: git
   source:
     branch: master
+    tag_filter: v3.2
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 jobs:
 - name: update-bosh
@@ -43,6 +45,10 @@ jobs:
     - get: cf-deployment
   - task: bbl-up
     file: cf-deployment-concourse-tasks/bbl-up/task.yml
+    input_mapping:
+      cf-deployment-concourse-task: cf-deployment-concourse-task
+      cf-deployment: cf-deployment
+      ops-files: cf-deployment
     params:
       BBL_IAAS: aws
       BBL_AWS_REGION: {{bbl_aws_region}}
@@ -64,11 +70,11 @@ jobs:
     - get: bbl-state
       passed: [update-bosh]
     - get: cf-deployment
-      passed: [update-bosh]
     - get: cf-deployment-concourse-tasks
-      passed: [update-bosh]
   - task: bbl-up
     file: cf-deployment-concourse-tasks/bosh-upload-stemcell-from-cf-deployment/task.yml
+    input_mapping:
+      cf-deployment: cf-deployment
     params:
       INFRASTRUCTURE: aws
 - name: update-cf
@@ -79,9 +85,7 @@ jobs:
     - get: bbl-state
       passed: [update-stemcells]
     - get: cf-deployment-concourse-tasks
-      passed: [update-stemcells]
     - get: cf-deployment
-      passed: [update-stemcells]
     - get: vars-store
   - task: bosh-deploy-cf
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -89,7 +93,7 @@ jobs:
       bbl-state: bbl-state
       cf-deployment: cf-deployment
       ops-files: cf-deployment
-      vars-store: vars-store
+      vars-files: vars-store
     params:
       SYSTEM_DOMAIN: {{system_domain}}
       OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/scale-to-one-az.yml"
