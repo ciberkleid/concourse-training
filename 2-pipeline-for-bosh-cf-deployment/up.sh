@@ -72,7 +72,6 @@ fly set-pipeline \
   --config cf-deployment-pipeline.yml \
   --non-interactive \
 ;
-exit
 
 if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_OPS_PIPELINE/update-bosh | grep "succeeded" >/dev/null; then
   echo "Exiting... update-bosh hasn't succeeded yet. Manually trigger and wait for it to succeed before re-running this"

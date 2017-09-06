@@ -28,31 +28,23 @@ if ! [ -f bin/fly ]; then
   chmod +x bin/fly
 fi
 
-if ! fly targets | grep $CONCOURSE_TARGET; then
-  fly login \
-    --target $CONCOURSE_TARGET \
-    --concourse-url "http://$CONCOURSE_DOMAIN" \
-    --username $CONCOURSE_USERNAME \
-    --password $CONCOURSE_PASSWORD \
-  ;
-fi
-
-if ! [ -f state/cf-app-pipeline-vars.yml ]; then
-  cat > state/cf-app-pipeline-vars.yml <<EOF
-cf_api_url: $CF_API_URL
-cf_username: $APPUSER_USERNAME
-cf_password: $APPUSER_PASSWORD
-cf_org: $APPUSER_ORG
-cf_space: $APPUSER_SPACE
-app_repo_url: $APP_REPO_URL
-EOF
-fi
+fly login \
+  --target $CONCOURSE_TARGET \
+  --concourse-url "http://$CONCOURSE_DOMAIN" \
+  --username $CONCOURSE_USERNAME \
+  --password $CONCOURSE_PASSWORD \
+;
 
 if ! fly pipelines -t $CONCOURSE_TARGET | grep $CONCOURSE_PIPELINE; then
   fly set-pipeline \
     --target $CONCOURSE_TARGET \
     --pipeline $CONCOURSE_APP_PIPELINE \
-    --load-vars-from state/cf-app-pipeline-vars.yml \
+    -v cf_api_url=$CF_API_URL \
+    -v cf_username=$APPUSER_USERNAME \
+    -v cf_password=$APPUSER_PASSWORD \
+    -v cf_org=$APPUSER_ORG \
+    -v cf_space=$APPUSER_SPACE \
+    -v app_repo_url=$APP_REPO_URL \
     --config cf-app-pipeline.yml \
     --non-interactive \
   ;
