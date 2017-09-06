@@ -30,4 +30,4 @@ bosh deploy \
   --non-interactive \
 ;
 
-trap "cd $OUT_STATE_DIR; cp -R $IN_STATE_DIR/* ./; git add -A; git ci -m'Updated state' --author 'CI <ci@young.io>'" EXIT
+trap "cd $OUT_STATE_DIR; cp -R $IN_STATE_DIR/ ./; git add -A; git ci -m'Updated state' --author 'CI <ci@young.io>'" EXIT

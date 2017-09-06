@@ -15,7 +15,7 @@ resources:
 - name: my-pipeline
   type: git
   source:
-    branch: feature/micahs-pipeline
+    branch: master
     uri: {{pipeline_repo_url}}
 - name: cf-deployment
   type: git
@@ -71,7 +71,6 @@ jobs:
     - get: deployment-state
       passed: [create-infrastructure]
     - get: my-pipeline
-      passed: [create-infrastructure]
     - get: bosh-deployment
   - task: bosh-create-env
     file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-director/task.yml
@@ -93,7 +92,6 @@ jobs:
     - get: deployment-state
       passed: [deploy-director]
     - get: my-pipeline
-      passed: [deploy-director]
     - get: cf-deployment
   - task: bosh-deploy-cf
     file: my-pipeline/4-pipeline-for-bosh-create-env/pipelines/tasks/deploy-cf/task.yml
