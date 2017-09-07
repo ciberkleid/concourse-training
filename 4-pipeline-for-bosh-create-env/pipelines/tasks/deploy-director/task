@@ -16,10 +16,13 @@ date > $OUT_STATE_DIR/foo
 apt-get update
 apt-get install -y build-essential zlibc zlib1g-dev ruby ruby-dev openssl libxslt-dev libxml2-dev libssl-dev libreadline6 libreadline6-dev libyaml-dev libsqlite3-dev sqlite3
 
+jq -r '.bosh.manifest' state/bbl-state.json | bosh int - --path /cloud_provider/properties/aws > state/director/vars.yml
+
 bosh create-env \
   bosh-deployment/bosh.yml \
   --state=$OUT_STATE_DIR/director/state.json \
   --vars-store=$OUT_STATE_DIR/director/creds.yml \
+  --vars-file=$OUT_STATE_DIR/directory/vars.yml \
   -o bosh-deployment/aws/cpi.yml \
   -o bosh-deployment/external-ip-with-registry-not-recommended.yml \
   -o $PIPELINE_DIR/operations/versions.yml \
