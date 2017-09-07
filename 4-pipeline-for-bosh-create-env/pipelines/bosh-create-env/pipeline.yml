@@ -15,7 +15,7 @@ resources:
 - name: my-pipeline
   type: git
   source:
-    branch: master
+    branch: wip
     uri: {{pipeline_repo_url}}
 - name: cf-deployment
   type: git
