@@ -1,28 +1,25 @@
 #!/bin/bash
-
-true ${PIPELINE_DIR:?"!"}
-true ${IN_STATE_DIR:?"!"}
-true ${OUT_STATE_DIR:?"!"}
-
-source $IN_STATE_DIR/director/bosh-env.sh
-: ${BOSH_CLIENT:?"!"}
-: ${BOSH_CLIENT_SECRET:?"!"}
-: ${BOSH_ENVIRONMENT:?"!"}
-: ${BOSH_CA_CERT:?"!"}
+set -o errexit
+set -o pipefail
 
 cp -r $IN_STATE_DIR/. $OUT_STATE_DIR/
 
-date > $OUT_STATE_DIR/foo
 apt-get update
-apt-get install -y build-essential zlibc zlib1g-dev ruby ruby-dev openssl libxslt-dev libxml2-dev libssl-dev libreadline6 libreadline6-dev libyaml-dev libsqlite3-dev sqlite3
+apt-get install -y build-essential zlibc zlib1g-dev ruby ruby-dev openssl libxslt-dev libxml2-dev libssl-dev libreadline6 libreadline6-dev libyaml-dev libsqlite3-dev sqlite3 curl
+curl -L "https://github.com/cloudfoundry/bosh-bootloader/releases/download/v3.1.0/bbl-v3.1.0_linux_x86-64" > bbl
+chmod +x bbl
 
-jq -r '.bosh.manifest' state/bbl-state.json | bosh int - --path /cloud_provider/properties/aws > state/director/vars.yml
+./bbl --state-dir $OUT_STATE_DIR print-env > $OUT_STATE_DIR/director-env.sh
+./bbl --state-dir $OUT_STATE_DIR bosh-deployment-vars > $OUT_STATE_DIR/director-vars.yml
+./bbl --state-dir $OUT_STATE_DIR cloud-config > $OUT_STATE_DIR/director-cloud-config.yml
+
+source $OUT_STATE_DIR/director-env.sh
 
 bosh create-env \
   bosh-deployment/bosh.yml \
-  --state=$OUT_STATE_DIR/director/state.json \
-  --vars-store=$OUT_STATE_DIR/director/creds.yml \
-  --vars-file=$OUT_STATE_DIR/directory/vars.yml \
+  --state=$OUT_STATE_DIR/director-state.json \
+  --vars-store=$OUT_STATE_DIR/director-creds.yml \
+  --vars-file=$OUT_STATE_DIR/director-vars.yml \
   -o bosh-deployment/aws/cpi.yml \
   -o bosh-deployment/external-ip-with-registry-not-recommended.yml \
   -o $PIPELINE_DIR/operations/versions.yml \
@@ -30,7 +27,7 @@ bosh create-env \
 ;
 
 bosh update-cloud-config \
-  $OUT_STATE_DIR/director/cloud-config.yml \
+  $OUT_STATE_DIR/director-cloud-config.yml \
   --non-interactive \
 ;
 
