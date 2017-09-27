@@ -130,7 +130,7 @@ bosh deploy \
 ;
 
 if ! [ -f bin/fly ]; then
-  curl -L "http://$CONCOURSE_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly
+  curl -L "http://$CONCOURSE_LBS_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly
   chmod +x bin/fly
 fi
 
