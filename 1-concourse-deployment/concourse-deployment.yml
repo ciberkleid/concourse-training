@@ -2,13 +2,13 @@
 name: concourse
 releases:
 - name: concourse
-  url: https://bosh.io/d/github.com/concourse/concourse?v=3.5.0
+  url: https://bosh.io/d/github.com/concourse/concourse
   sha1: 65a974b3831bb9908661a5ffffbe456e10185149
-  version: 3.5.0
+  version: latest
 - name: garden-runc
-  url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.9.3
+  url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release
   sha1: a153fd2b9d85d01772e9c6907b8c9e5005059c9e
-  version: 1.9.3
+  version: latest
 stemcells:
 - alias: trusty
   os: ubuntu-trusty
