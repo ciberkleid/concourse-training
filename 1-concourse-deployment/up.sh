@@ -26,7 +26,7 @@ set -x
 
 
 mkdir -p bin
-PATH=$PATH:$(pwd)/bin
+PATH=$(pwd)/bin:$PATH
 
 if ! [ -f bin/bosh ]; then
   curl -L "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-2.0.1-darwin-amd64" > bin/bosh
