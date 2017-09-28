@@ -29,14 +29,14 @@ mkdir -p bin
 PATH=$(pwd)/bin:$PATH
 
 if ! [ -f bin/bosh ]; then
-  curl -L "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-2.0.1-darwin-amd64" > bin/bosh
+  curl -L "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-2.0.40-darwin-amd64" > bin/bosh
   chmod +x bin/bosh
 fi
 
 bbl_cmd="bbl --state-dir state/"
 if ! [ -f bin/bbl ]; then
-  curl -JLO "https://github.com/cloudfoundry/bosh-bootloader/releases/download/v3.0.4/bbl-v3.0.4_osx"
-  mv bbl-v3.0.4_osx bin/bbl
+  curl -JLO "https://github.com/cloudfoundry/bosh-bootloader/releases/download/v4.10.2/bbl-v4.10.2_osx"
+  mv bbl-v4.10.2_osx bin/bbl
   chmod +x bin/bbl
 fi
 
@@ -106,7 +106,7 @@ if ! bosh env --environment $DIRECTOR_ADDRESS; then
 fi
 
 if ! bosh stemcells -e $CONCOURSE_BOSH_ENV | grep bosh-aws-xen-hvm-ubuntu-trusty-go_agent; then
-  bosh upload-stemcell -e $CONCOURSE_BOSH_ENV https://s3.amazonaws.com/bosh-core-stemcells/aws/bosh-stemcell-3363.9-aws-xen-hvm-ubuntu-trusty-go_agent.tgz
+  bosh upload-stemcell -e $CONCOURSE_BOSH_ENV https://s3.amazonaws.com/bosh-core-stemcells/aws/bosh-stemcell-3445.11-aws-xen-hvm-ubuntu-trusty-go_agent.tgz
 fi
 
 CONCOURSE_LBS_DOMAIN=$($bbl_cmd lbs | sed 's/.*\[\(.*\)\]/\1/')  # Format: Concourse LB: stack-bbl-Concours-1RABRZ7DBDC7F [stack-bbl-Concours-1RABRZ7DBDC7F-585187859.us-west-2.elb.amazonaws.com]
