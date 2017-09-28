@@ -22,6 +22,8 @@ source ./state/env.sh
 : ${DOMAIN:?"!"}
 : ${CONCOURSE_BOSH_ENV:?"!"}
 : ${CONCOURSE_DEPLOYMENT_NAME:?"!"}
+: ${AWS_HOSTED_ZONE_ID:?"!"}
+: ${CONCOURSE_DOMAIN:?"!"}
 set -x
 
 
@@ -148,3 +150,4 @@ if fly login \
   ;
 fi
 
+aws route53 change-resource-record-sets --hosted-zone-id $AWS_HOSTED_ZONE_ID --change-batch `jq -c -n "{\"Changes\": [{\"Action\": \"UPSERT\", \"ResourceRecordSet\": {\"Name\": \"$CONCOURSE_DOMAIN\", \"Type\": \"CNAME\", \"TTL\": 300, \"ResourceRecords\": [{\"Value\": \"$CONCOURSE_LBS_DOMAIN\"} ] } } ] }"`
