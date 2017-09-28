@@ -19,11 +19,10 @@ source ./state/env.sh
 : ${CONCOURSE_DB_ROLE:?"!"}
 : ${CONCOURSE_DB_PASSWORD:?"!"}
 : ${VM_KEYPAIR_NAME:?"!"}
-: ${DOMAIN:?"!"}
+: ${CONCOURSE_DOMAIN:?"!"}
 : ${CONCOURSE_BOSH_ENV:?"!"}
 : ${CONCOURSE_DEPLOYMENT_NAME:?"!"}
 : ${AWS_HOSTED_ZONE_ID:?"!"}
-: ${CONCOURSE_DOMAIN:?"!"}
 set -x
 
 
@@ -68,16 +67,16 @@ if ! [ -f state/rsakey.pem ]; then
   openssl req \
     -newkey rsa:2048 \
     -nodes \
-    -keyout state/$DOMAIN.key \
+    -keyout state/$CONCOURSE_DOMAIN.key \
     -x509 \
     -days 365 \
-    -subj "/C=US/ST=NY/O=Pivotal/localityName=NYC/commonName=$DOMAIN/organizationalUnitName=Foo/emailAddress=bar" \
+    -subj "/C=US/ST=NY/O=Pivotal/localityName=NYC/commonName=$CONCOURSE_DOMAIN/organizationalUnitName=Foo/emailAddress=bar" \
     -multivalue-rdn \
-    -out state/$DOMAIN.crt \
+    -out state/$CONCOURSE_DOMAIN.crt \
   ;
 
   openssl rsa \
-    -in state/$DOMAIN.key \
+    -in state/$CONCOURSE_DOMAIN.key \
     -out state/rsakey.pem \
   ;
 fi
@@ -86,7 +85,7 @@ if ! $bbl_cmd lbs; then
   $bbl_cmd \
     create-lbs \
     --type concourse \
-    --cert state/$DOMAIN.crt \
+    --cert state/$CONCOURSE_DOMAIN.crt \
     --key state/rsakey.pem
 fi
 
@@ -131,14 +130,16 @@ bosh deploy \
   concourse-deployment.yml \
 ;
 
+aws route53 change-resource-record-sets --hosted-zone-id $AWS_HOSTED_ZONE_ID --change-batch `jq -c -n "{\"Changes\": [{\"Action\": \"UPSERT\", \"ResourceRecordSet\": {\"Name\": \"$CONCOURSE_DOMAIN\", \"Type\": \"CNAME\", \"TTL\": 300, \"ResourceRecords\": [{\"Value\": \"$CONCOURSE_LBS_DOMAIN\"} ] } } ] }"`
+
 if ! [ -f bin/fly ]; then
-  curl -L "http://$CONCOURSE_LBS_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly
+  curl -L "http://$CONCOURSE_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly
   chmod +x bin/fly
 fi
 
 if fly login \
   --target $CONCOURSE_TARGET \
-  --concourse-url "http://$CONCOURSE_LBS_DOMAIN" \
+  --concourse-url "http://$CONCOURSE_DOMAIN" \
   --username $CONCOURSE_USERNAME \
   --password $CONCOURSE_PASSWORD; then
   fly set-team \
