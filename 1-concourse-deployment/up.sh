@@ -137,8 +137,8 @@ fi
 if fly login \
   --target $CONCOURSE_TARGET \
   --concourse-url "http://$CONCOURSE_LBS_DOMAIN" \
-  --username admin \
-  --password password; then
+  --username $CONCOURSE_USERNAME \
+  --password $CONCOURSE_PASSWORD; then
   fly set-team \
     --target $CONCOURSE_TARGET \
     --team-name main \
