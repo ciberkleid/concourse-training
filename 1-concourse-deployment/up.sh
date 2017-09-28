@@ -130,16 +130,14 @@ bosh deploy \
   concourse-deployment.yml \
 ;
 
-aws route53 change-resource-record-sets --hosted-zone-id $AWS_HOSTED_ZONE_ID --change-batch `jq -c -n "{\"Changes\": [{\"Action\": \"UPSERT\", \"ResourceRecordSet\": {\"Name\": \"$CONCOURSE_DOMAIN\", \"Type\": \"CNAME\", \"TTL\": 300, \"ResourceRecords\": [{\"Value\": \"$CONCOURSE_LBS_DOMAIN\"} ] } } ] }"`
-
 if ! [ -f bin/fly ]; then
-  curl -L "http://$CONCOURSE_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly
+  curl -L "http://$CONCOURSE_LBS_DOMAIN/api/v1/cli?arch=amd64&platform=darwin" > bin/fly
   chmod +x bin/fly
 fi
 
 if fly login \
   --target $CONCOURSE_TARGET \
-  --concourse-url "http://$CONCOURSE_DOMAIN" \
+  --concourse-url "http://$CONCOURSE_LBS_DOMAIN" \
   --username $CONCOURSE_USERNAME \
   --password $CONCOURSE_PASSWORD; then
   fly set-team \
