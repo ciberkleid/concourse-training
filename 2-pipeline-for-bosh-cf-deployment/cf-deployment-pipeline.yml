@@ -22,6 +22,14 @@ resources:
     private_key: {{state_repo_private_key}}
     paths:
     - bbl-state.json
+- name: custom-ops-files
+  type: git
+  source:
+    branch: master
+    uri: {{state_repo_url}}
+    private_key: {{state_repo_private_key}}
+    paths:
+    - operations
 - name: cf-deployment
   type: git
   source:
@@ -87,12 +95,13 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-deployment
     - get: vars-store
+    - get: custom-ops-files
   - task: bosh-deploy-cf
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
       bbl-state: bbl-state
       cf-deployment: cf-deployment
-      ops-files: cf-deployment
+      ops-files: custom-ops-files
       vars-files: vars-store
     params:
       SYSTEM_DOMAIN: {{system_domain}}
