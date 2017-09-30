@@ -12,7 +12,6 @@ source state/env.sh
 AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?"env!"}
 AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?"env!"}
 AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:?"env!"}
-BBL_AWS_BOSH_AZ=${BBL_AWS_BOSH_AZ:?"env!"}
 CONCOURSE_DOMAIN=${CONCOURSE_DOMAIN:?"env!"}
 CONCOURSE_USERNAME=${CONCOURSE_USERNAME:?"env!"}
 CONCOURSE_PASSWORD=${CONCOURSE_PASSWORD:?"env!"}
@@ -66,7 +65,6 @@ fly set-pipeline \
   --pipeline $CONCOURSE_OPS_PIPELINE \
   -v bbl_env_name=$CONCOURSE_BOSH_ENV \
   -v bbl_aws_region=$AWS_DEFAULT_REGION \
-  -v bbl_aws_bosh_az=$BBL_AWS_BOSH_AZ \
   -v bbl_aws_access_key_id=$AWS_ACCESS_KEY_ID \
   -v bbl_aws_secret_access_key=$AWS_SECRET_ACCESS_KEY \
   -v bbl_lbs_ssl_cert="$BBL_LB_CERT" \
