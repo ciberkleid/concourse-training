@@ -56,43 +56,43 @@
 
 - type: replace
   path: /instance_groups/name=consul/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=nats/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=etcd/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=diego-bbs/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=uaa/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=consul/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=diego-brain/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=diego-cell/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=router/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=api/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=cc-bridge/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=cc-worker/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=doppler/azs
-  value: [ z2 ]
+  value: [ z1 ]
 - type: replace
   path: /instance_groups/name=log-api/azs
-  value: [ z2 ]
+  value: [ z1 ]
