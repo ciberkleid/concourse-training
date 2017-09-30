@@ -12,27 +12,31 @@ source state/env.sh
 AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?"env!"}
 AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?"env!"}
 AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:?"env!"}
+BBL_AWS_BOSH_AZ=${BBL_AWS_BOSH_AZ:?"env!"}
 CONCOURSE_DOMAIN=${CONCOURSE_DOMAIN:?"env!"}
 CONCOURSE_USERNAME=${CONCOURSE_USERNAME:?"env!"}
 CONCOURSE_PASSWORD=${CONCOURSE_PASSWORD:?"env!"}
 CONCOURSE_BOSH_ENV=${CONCOURSE_BOSH_ENV:?"env!"}
-DOMAIN=${DOMAIN:?"env!"}
+CF_DOMAIN=${CF_DOMAIN:?"env!"}
 CONCOURSE_TARGET=${CONCOURSE_TARGET:?"env!"}
 CONCOURSE_OPS_PIPELINE=${CONCOURSE_OPS_PIPELINE:?"env!"}
 BBL_LB_CERT=${BBL_LB_CERT:?"env!"}
-BBL_LB_KEY=${BBL_LB_KEY:?"env!"} STATE_REPO_URL=${STATE_REPO_URL:?"env!"}
+BBL_LB_KEY=${BBL_LB_KEY:?"env!"} 
+STATE_REPO_URL=${STATE_REPO_URL:?"env!"}
 STATE_REPO_PRIVATE_KEY=${STATE_REPO_PRIVATE_KEY:?"env!"}
 UAA_ADMIN_SECRET=${UAA_ADMIN_SECRET:?"env!"}
 APPUSER_USERNAME=${APPUSER_USERNAME:?"env!"}
 APPUSER_PASSWORD=${APPUSER_PASSWORD:?"env!"}
 APPUSER_ORG=${APPUSER_ORG:?"env!"}
 APPUSER_SPACE=${APPUSER_SPACE:?"env!"}
+CUSTOM_OPS_FILES_REPO_URL=${CUSTOM_OPS_FILES_REPO_URL:?"env!"}
+CUSTOM_OPS_FILES_PATHS=${CUSTOM_OPS_FILES_PATHS:?"env!"}
 
 mkdir -p bin
 PATH=$(pwd)/bin:$PATH
 
 if ! [ -f bin/bbl ]; then
-  curl -L "https://github.com/cloudfoundry/bosh-bootloader/releases/download/v3.0.4/bbl-v3.0.4_osx" > bin/bbl
+  curl -L "https://github.com/cloudfoundry/bosh-bootloader/releases/download/v4.10.2/bbl-v4.10.2_osx" > bin/bbl
   chmod +x bin/bbl
 fi
 
@@ -62,13 +66,16 @@ fly set-pipeline \
   --pipeline $CONCOURSE_OPS_PIPELINE \
   -v bbl_env_name=$CONCOURSE_BOSH_ENV \
   -v bbl_aws_region=$AWS_DEFAULT_REGION \
+  -v bbl_aws_bosh_az=$BBL_AWS_BOSH_AZ \
   -v bbl_aws_access_key_id=$AWS_ACCESS_KEY_ID \
   -v bbl_aws_secret_access_key=$AWS_SECRET_ACCESS_KEY \
   -v bbl_lbs_ssl_cert="$BBL_LB_CERT" \
   -v bbl_lbs_ssl_signing_key="$BBL_LB_KEY" \
   -v state_repo_url=$STATE_REPO_URL \
   -v state_repo_private_key="$STATE_REPO_PRIVATE_KEY" \
-  -v system_domain=$DOMAIN \
+  -v system_domain=$CF_DOMAIN \
+  -v custom_ops_files_repo_url="$CUSTOM_OPS_FILES_REPO_URL" \
+  -v custom_ops_files_paths="$CUSTOM_OPS_FILES_PATHS" \
   --config cf-deployment-pipeline.yml \
   --non-interactive \
 ;
@@ -88,8 +95,8 @@ if ! fly builds -t $CONCOURSE_TARGET -j $CONCOURSE_OPS_PIPELINE/update-cf | grep
   exit 1
 fi
 
-if ! uaac target | grep uaa.$DOMAIN; then
-  uaac target uaa.$DOMAIN --skip-ssl-validation
+if ! uaac target | grep uaa.$CF_DOMAIN; then
+  uaac target uaa.$CF_DOMAIN --skip-ssl-validation
 fi
 
 if ! uaac contexts | grep access_token; then
@@ -108,9 +115,9 @@ if ! uaac users | grep $APPUSER_USERNAME; then
   uaac member add scim.write $APPUSER_USERNAME
 fi
 
-if ! cf target | grep "https://api.$DOMAIN"; then
+if ! cf target | grep "https://api.$CF_DOMAIN"; then
   cf login \
-    -a https://api.$DOMAIN \
+    -a https://api.$CF_DOMAIN \
     -u $APPUSER_USERNAME \
     -p $APPUSER_PASSWORD \
     -o system \

@@ -26,10 +26,9 @@ resources:
   type: git
   source:
     branch: master
-    uri: {{state_repo_url}}
-    private_key: {{state_repo_private_key}}
+    uri: {{custom_ops_files_repo_url}}
     paths:
-    - operations
+    - {{custom_ops_files_paths}}
 - name: cf-deployment
   type: git
   source:
