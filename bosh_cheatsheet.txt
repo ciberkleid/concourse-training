@@ -1,6 +1,11 @@
-bbl_cmd="bbl --state-dir ."
+##### SET THESE VALUES!!!! ########
+bbl_cmd="bbl --state-dir <DIR WITH CORRECT AND UPDATED bbl-state.json>>"
+BOSH_ENV_ALIAS=<ALIAS OF YOUR CHOICE>
+
+
 BOSH_ENV_ADDRESS=$($bbl_cmd director-address)
-BOSH_ENV_ALIAS=cf-bosh-env
+
+# bosh login
 if ! bosh env --environment $BOSH_ENV_ADDRESS; then
   bosh alias-env $BOSH_ENV_ALIAS \
     --environment $BOSH_ENV_ADDRESS \
@@ -16,3 +21,9 @@ if ! bosh env --environment $BOSH_ENV_ADDRESS; then
     --client-secret $($bbl_cmd director-password) \
   ;
 fi
+
+# bosh cloud-config update
+bosh -e $BOSH_ENV_ALIAS cc > cloud-config-$BOSH_ENV_ALIAS.yml
+# make changes, e.g. compilation az = z2
+# or change all c3 to c4, all r3 to r4, all m3 to m4, and m3.medium to m4.large
+bosh -e $BOSH_ENV_ALIAS ucc cloud-config-$BOSH_ENV_ALIAS.yml
