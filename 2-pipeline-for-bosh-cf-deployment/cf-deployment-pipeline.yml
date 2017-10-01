@@ -28,7 +28,7 @@ resources:
     branch: master
     uri: {{custom_ops_files_repo_url}}
     paths:
-    - {{custom_ops_files_paths}}
+    - operations
 - name: cf-deployment
   type: git
   source:
