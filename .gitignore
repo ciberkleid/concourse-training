@@ -2,3 +2,4 @@ bin/
 state/
 env.sh
 bbl-state-ciberkleid/
+cloud-config*.yml
