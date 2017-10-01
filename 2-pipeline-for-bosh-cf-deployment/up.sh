@@ -29,7 +29,6 @@ APPUSER_PASSWORD=${APPUSER_PASSWORD:?"env!"}
 APPUSER_ORG=${APPUSER_ORG:?"env!"}
 APPUSER_SPACE=${APPUSER_SPACE:?"env!"}
 CUSTOM_OPS_FILES_REPO_URL=${CUSTOM_OPS_FILES_REPO_URL:?"env!"}
-CUSTOM_OPS_FILES_PATHS=${CUSTOM_OPS_FILES_PATHS:?"env!"}
 
 mkdir -p bin
 PATH=$(pwd)/bin:$PATH
@@ -48,6 +47,10 @@ if ! [ -f bin/cf ]; then
   curl -L "https://cli.run.pivotal.io/stable?release=macosx64-binary&version=6.26.0&source=github-rel" | tar xzO cf > bin/cf
   chmod +x bin/cf
 fi
+
+CF_ROUTER_LBS_DOMAIN=$(aws elb describe-load-balancers | grep CFRouter | grep CanonicalHostedZoneName  | sed 's/.*\": \"\(.*\)\",/\1/')  # Format:             "CanonicalHostedZoneName": "stack-bbl-CFRouter-XBW7WT5N7MZ4-925622364.us-east-1.elb.amazonaws.com",
+
+aws route53 change-resource-record-sets --hosted-zone-id $AWS_HOSTED_ZONE_ID --change-batch `jq -c -n "{\"Changes\": [{\"Action\": \"UPSERT\", \"ResourceRecordSet\": {\"Name\": \"*.$CF_DOMAIN\", \"Type\": \"CNAME\", \"TTL\": 300, \"ResourceRecords\": [{\"Value\": \"$CF_ROUTER_LBS_DOMAIN\"}]}}]}"`
 
 if ! uaac --version; then
   gem install uaac
@@ -73,7 +76,6 @@ fly set-pipeline \
   -v state_repo_private_key="$STATE_REPO_PRIVATE_KEY" \
   -v system_domain=$CF_DOMAIN \
   -v custom_ops_files_repo_url="$CUSTOM_OPS_FILES_REPO_URL" \
-  -v custom_ops_files_paths="$CUSTOM_OPS_FILES_PATHS" \
   --config cf-deployment-pipeline.yml \
   --non-interactive \
 ;
