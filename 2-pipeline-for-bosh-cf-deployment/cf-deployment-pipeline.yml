@@ -22,13 +22,15 @@ resources:
     private_key: {{state_repo_private_key}}
     paths:
     - bbl-state.json
-- name: custom-ops-files
+- name: ops-files
   type: git
   source:
     branch: master
-    uri: {{custom_ops_files_repo_url}}
-    paths:
-    - operations
+    tag_filter: v0.4.0
+    uri: https://github.com/cloudfoundry/cf-deployment.git
+#    uri: {{custom_ops_files_repo_url}}
+#    paths:
+#    - operations
 - name: cf-deployment
   type: git
   source:
@@ -49,13 +51,12 @@ jobs:
   - aggregate:
     - get: bbl-state
     - get: cf-deployment-concourse-tasks
-    - get: cf-deployment
+    - get: ops-files
   - task: bbl-up
     file: cf-deployment-concourse-tasks/bbl-up/task.yml
     input_mapping:
       cf-deployment-concourse-task: cf-deployment-concourse-task
-      cf-deployment: cf-deployment
-      ops-files: cf-deployment
+      ops-files: ops-files
     params:
       BBL_IAAS: aws
       BBL_AWS_REGION: {{bbl_aws_region}}
@@ -64,6 +65,7 @@ jobs:
       BBL_LB_CERT: {{bbl_lbs_ssl_cert}}
       BBL_LB_KEY: {{bbl_lbs_ssl_signing_key}}
       BBL_ENV_NAME: {{bbl_env_name}}
+      OPS_FILES: "operations/aws.yml operations/change-logging-port-for-aws-elb.yml operations/scale-to-one-az.yml"
     ensure:
       put: bbl-state
       params:
@@ -94,13 +96,13 @@ jobs:
     - get: cf-deployment-concourse-tasks
     - get: cf-deployment
     - get: vars-store
-    - get: custom-ops-files
+    - get: ops-files
   - task: bosh-deploy-cf
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
       bbl-state: bbl-state
       cf-deployment: cf-deployment
-      ops-files: custom-ops-files
+      ops-files: ops-files
       vars-files: vars-store
     params:
       SYSTEM_DOMAIN: {{system_domain}}
